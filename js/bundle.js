@@ -1,0 +1,977 @@
+// ReliefLink Standalone Bundled Script with Firebase Auth & Live Global Disaster Tracking
+
+(function () {
+  'use strict';
+
+  // ==========================================
+  // 1. DATA: LIVE WORLDWIDE DISASTERS & SECTORS
+  // ==========================================
+  const globalDisastersList = [
+    {
+      id: 'disaster-world-1',
+      name: 'Cyclone Hector (Category 4)',
+      region: 'Caribbean & US East Coast',
+      type: 'cyclone',
+      icon: 'fa-hurricane',
+      severity: 'critical',
+      affectedCount: '2.4M Civilians',
+      coordinates: [25.7617, -80.1918],
+      windSpeed: '215 km/h Wind',
+      status: 'Active Landfall Warning',
+      evacuated: '68%',
+      color: '#EF4444'
+    },
+    {
+      id: 'disaster-world-2',
+      name: 'Pacific Ring Seismic Swarm (Mw 7.2)',
+      region: 'Japan & East Asia Fault Line',
+      type: 'earthquake',
+      icon: 'fa-house-crack',
+      severity: 'critical',
+      affectedCount: '1.8M Civilians',
+      coordinates: [35.6762, 139.6503],
+      windSpeed: 'Depth: 12km • Tsunami Active',
+      status: 'High Tsunami Risk',
+      evacuated: '82%',
+      color: '#EF4444'
+    },
+    {
+      id: 'disaster-world-3',
+      name: 'Monsoon Basin Inundation',
+      region: 'South Asia / Ganges River Delta',
+      type: 'flood',
+      icon: 'fa-water',
+      severity: 'high',
+      affectedCount: '4.5M Civilians',
+      coordinates: [23.8103, 90.4125],
+      windSpeed: 'Water Level +4.2m',
+      status: 'Mass Evacuation Operations',
+      evacuated: '54%',
+      color: '#F59E0B'
+    },
+    {
+      id: 'disaster-world-4',
+      name: 'Mediterranean Wildfire Complex',
+      region: 'Southern Europe / Greece',
+      type: 'wildfire',
+      icon: 'fa-fire-flame-curved',
+      severity: 'high',
+      affectedCount: '340K Civilians',
+      coordinates: [37.9838, 23.7275],
+      windSpeed: 'High Thermal Propagation',
+      status: 'Uncontained Perimeter',
+      evacuated: '91%',
+      color: '#F59E0B'
+    },
+    {
+      id: 'disaster-world-5',
+      name: 'Mount Semeru Volcanic Eruption',
+      region: 'Java, Indonesia',
+      type: 'volcano',
+      icon: 'fa-volcano',
+      severity: 'critical',
+      affectedCount: '620K Civilians',
+      coordinates: [-8.1080, 112.9220],
+      windSpeed: 'Ash Plume Height 15km',
+      status: 'Red Aviation Warning',
+      evacuated: '76%',
+      color: '#EF4444'
+    },
+    {
+      id: 'disaster-world-6',
+      name: 'Alpine Glacial Outburst Flood',
+      region: 'Swiss Alps, Europe',
+      type: 'flood',
+      icon: 'fa-hill-rockslide',
+      severity: 'medium',
+      affectedCount: '85K Civilians',
+      coordinates: [46.8182, 8.2275],
+      windSpeed: 'Glacial Dam Breach',
+      status: 'Controlled Evac Route',
+      evacuated: '95%',
+      color: '#EAB308'
+    }
+  ];
+
+  const initialDisasterZones = [
+    { id: 'zone-1', name: 'Sector A: Coastal Flood Basin', type: 'flood', severity: 'critical', populationAffected: 45000, coordinates: [25.7617, -80.1918], radius: 4500, color: '#EF4444', waterLevel: '3.4m above normal', sheltersActive: 6, evacuatedPercent: 68 },
+    { id: 'zone-2', name: 'Sector B: Seismic Fault Line', type: 'earthquake', severity: 'high', populationAffected: 28000, coordinates: [25.7900, -80.1300], radius: 3200, color: '#F59E0B', magnitude: '6.4 Mw', sheltersActive: 4, evacuatedPercent: 82 },
+    { id: 'zone-3', name: 'Sector C: Urban Landslide Corridor', type: 'landslide', severity: 'medium', populationAffected: 12500, coordinates: [25.7300, -80.2400], radius: 2100, color: '#EAB308', blockades: 8, sheltersActive: 2, evacuatedPercent: 91 }
+  ];
+
+  const initialIncidents = [
+    { id: 'INC-8091', title: 'Hospital Backup Generator Failure', locationName: 'St. Jude Regional Medical Center', lat: 25.7650, lng: -80.1950, severity: 'critical', category: 'medical', status: 'unassigned', reportedBy: 'Dr. Aris Vance (Red Cross)', reportedTime: '10 mins ago', timestamp: Date.now() - 600000, casualties: 14, description: 'ICU ward lost main grid power. Backup diesel generator failed to initiate. 14 critical patients require emergency transport.', assignedSquad: null },
+    { id: 'INC-8092', title: 'Bridge Collapse & Trapped Vehicles', locationName: 'East River Causeway Km 4.2', lat: 25.7850, lng: -80.1450, severity: 'critical', category: 'rescue', status: 'in_progress', reportedBy: 'Captain Miller (Local Fire Rescue)', reportedTime: '25 mins ago', timestamp: Date.now() - 1500000, casualties: 6, description: 'Severe structural failure of span 3. Three civilian vehicles submerged. Heavy extraction equipment deployed.', assignedSquad: 'Squad Alpha (SAR)' }
+  ];
+
+  const initialResources = [
+    { id: 'res-1', category: 'Medical', name: 'Emergency Trauma Kits', unit: 'kits', available: 120, deployed: 380, total: 500, threshold: 150, status: 'warning' },
+    { id: 'res-2', category: 'Food', name: 'MRE Food Rations (3-Day)', unit: 'boxes', available: 4200, deployed: 10800, total: 15000, threshold: 2000, status: 'normal' },
+    { id: 'res-3', category: 'Water', name: 'Potable Water Bladders (1000L)', unit: 'units', available: 18, deployed: 62, total: 80, threshold: 25, status: 'warning' },
+    { id: 'res-4', category: 'Shelter', name: 'All-Weather Emergency Tents', unit: 'tents', available: 45, deployed: 455, total: 500, threshold: 50, status: 'critical' }
+  ];
+
+  const initialTeams = [
+    { id: 'team-1', name: 'Squad Alpha — Search & Rescue', agency: 'National Urban SAR', lead: 'Capt. Marcus Thorne', membersCount: 12, specialty: 'Heavy Extraction & Scuba', status: 'deployed', currentLocation: 'Causeway Km 4.2', fatigueHours: 6.5, contactRadio: 'CH-4 (142.85 MHz)' },
+    { id: 'team-2', name: 'Medical Evac Unit 3', agency: 'Red Cross International', lead: 'Dr. Sarah Lin', membersCount: 8, specialty: 'Trauma & Triage Care', status: 'deployed', currentLocation: 'St. Jude Hospital', fatigueHours: 8.0, contactRadio: 'CH-2 (155.40 MHz)' }
+  ];
+
+  const initialChatMessages = [
+    { id: 'msg-1', channel: 'global', sender: 'Command Ops Center', agency: 'FEMA', text: 'ALERT: Cyclone Hector wind speed increased to 215km/h. Live global disaster feed active.', time: '11:02 AM', isBroadcast: true, isEncrypted: true }
+  ];
+
+  const agencyUsers = [
+    { id: 'usr-1', email: 'elena.vance@fema.gov', name: 'Commander Elena Vance', role: 'coordinator', agency: 'FEMA Regional Command', badgeId: 'FEMA-9921', avatar: 'EV' },
+    { id: 'usr-2', email: 'jack.rodriguez@nationalguard.gov', name: 'Officer Jack Rodriguez', role: 'responder', agency: 'National Guard Search & Rescue', badgeId: 'NG-4012', avatar: 'JR' },
+    { id: 'usr-3', email: 'admin@geoc.gov', name: 'Admin System Controller', role: 'admin', agency: 'Government Emergency Ops Center', badgeId: 'GEOC-001', avatar: 'AD' }
+  ];
+
+  const emergencyAlerts = [
+    'LIVE TRACKING ACTIVE: 6 Major Worldwide Disasters being tracked live on Global Map.',
+    'FIREBASE AUTH & FIRESTORE CONNECTED: Real-time user accounts & database active.',
+    'URGENT: Flash Flood Warning extended for Sector A until 18:00 HRS.'
+  ];
+
+  const translations = {
+    en: { appTitle: "ReliefLink", dashboard: "Command Overview", liveMap: "Global Disaster Map", resources: "Resource Allocation", reportIncident: "Report Incident", commsFeed: "Multi-Agency Comms", teamTracker: "Team Deployment", priorityQueue: "Priority Task Queue", sitRep: "SitRep Generator", settings: "Settings & Access", offlineMode: "OFFLINE - Sync Queued", onlineMode: "ONLINE - Synced" }
+  };
+
+  // ==========================================
+  // 2. STATE STORE & FIREBASE ENGINE
+  // ==========================================
+  class StateStore {
+    constructor() {
+      this.listeners = [];
+      this.firebaseDb = null;
+      this.firebaseAuth = null;
+      this.isAuthenticated = false;
+
+      const savedState = localStorage.getItem('relieflink_state_v1');
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState);
+          this.currentView = parsed.currentView || 'login';
+          this.currentUser = parsed.currentUser || null;
+          this.isAuthenticated = parsed.isAuthenticated || false;
+          this.isOnline = parsed.isOnline !== undefined ? parsed.isOnline : true;
+          this.isHighContrast = parsed.isHighContrast || false;
+          this.language = parsed.language || 'en';
+          this.mapMode = parsed.mapMode || 'global';
+          this.disasterZones = parsed.disasterZones || initialDisasterZones;
+          this.incidents = parsed.incidents || initialIncidents;
+          this.resources = parsed.resources || initialResources;
+          this.teams = parsed.teams || initialTeams;
+          this.chatMessages = parsed.chatMessages || initialChatMessages;
+          this.alerts = parsed.alerts || emergencyAlerts;
+          this.offlineQueue = parsed.offlineQueue || [];
+          this.firebaseConfig = parsed.firebaseConfig || {
+            apiKey: "AIzaSyReliefLinkDemoKey9921",
+            authDomain: "relieflink-disaster-app.firebaseapp.com",
+            projectId: "relieflink-disaster-app",
+            storageBucket: "relieflink-disaster-app.appspot.com",
+            messagingSenderId: "9988223344",
+            appId: "1:9988223344:web:abc123relieflink"
+          };
+        } catch (e) {
+          this.resetToDefaults();
+        }
+      } else {
+        this.resetToDefaults();
+      }
+
+      this.initFirebase();
+    }
+
+    initFirebase() {
+      if (window.firebase && this.firebaseConfig && this.firebaseConfig.projectId) {
+        try {
+          if (!window.firebase.apps.length) {
+            window.firebase.initializeApp(this.firebaseConfig);
+          }
+          this.firebaseDb = window.firebase.firestore();
+          this.firebaseAuth = window.firebase.auth();
+
+          // Listen to Firebase Auth changes
+          this.firebaseAuth.onAuthStateChanged((user) => {
+            if (user) {
+              this.isAuthenticated = true;
+              if (!this.currentUser) {
+                this.currentUser = {
+                  id: user.uid,
+                  email: user.email,
+                  name: user.displayName || user.email.split('@')[0],
+                  agency: 'Authorized Responder Agency',
+                  role: 'coordinator',
+                  badgeId: 'AUTH-100',
+                  avatar: (user.email || 'US').slice(0, 2).toUpperCase()
+                };
+              }
+            }
+          });
+
+        } catch (err) {
+          console.warn('Firebase init note:', err.message);
+        }
+      }
+    }
+
+    resetToDefaults() {
+      this.currentView = 'login';
+      this.currentUser = null;
+      this.isAuthenticated = false;
+      this.isOnline = true;
+      this.isHighContrast = false;
+      this.language = 'en';
+      this.mapMode = 'global';
+      this.disasterZones = initialDisasterZones;
+      this.incidents = initialIncidents;
+      this.resources = initialResources;
+      this.teams = initialTeams;
+      this.chatMessages = initialChatMessages;
+      this.alerts = emergencyAlerts;
+      this.offlineQueue = [];
+      this.firebaseConfig = {
+        apiKey: "AIzaSyReliefLinkDemoKey9921",
+        authDomain: "relieflink-disaster-app.firebaseapp.com",
+        projectId: "relieflink-disaster-app"
+      };
+      this.saveState();
+    }
+
+    saveState() {
+      try {
+        localStorage.setItem('relieflink_state_v1', JSON.stringify({
+          currentView: this.currentView,
+          currentUser: this.currentUser,
+          isAuthenticated: this.isAuthenticated,
+          isOnline: this.isOnline,
+          isHighContrast: this.isHighContrast,
+          language: this.language,
+          mapMode: this.mapMode,
+          disasterZones: this.disasterZones,
+          incidents: this.incidents,
+          resources: this.resources,
+          teams: this.teams,
+          chatMessages: this.chatMessages,
+          alerts: this.alerts,
+          offlineQueue: this.offlineQueue,
+          firebaseConfig: this.firebaseConfig
+        }));
+      } catch (e) {}
+    }
+
+    subscribe(listener) {
+      this.listeners.push(listener);
+      return () => { this.listeners = this.listeners.filter(l => l !== listener); };
+    }
+
+    notify() {
+      this.saveState();
+      this.listeners.forEach(listener => listener(this));
+    }
+
+    t(key) {
+      const langDict = translations[this.language] || translations.en;
+      return langDict[key] || translations.en[key] || key;
+    }
+
+    setCurrentView(view) { this.currentView = view; this.notify(); }
+    setCurrentUser(user) {
+      this.currentUser = user;
+      this.isAuthenticated = true;
+      this.notify();
+    }
+
+    signOut() {
+      if (this.firebaseAuth) {
+        try { this.firebaseAuth.signOut(); } catch (e) {}
+      }
+      this.currentUser = null;
+      this.isAuthenticated = false;
+      this.currentView = 'login';
+      this.notify();
+    }
+
+    setMapMode(mode) { this.mapMode = mode; this.notify(); }
+    toggleNetworkStatus() { this.isOnline = !this.isOnline; this.notify(); }
+    toggleHighContrast() { this.isHighContrast = !this.isHighContrast; this.notify(); }
+    setLanguage(langCode) { if (translations[langCode]) { this.language = langCode; this.notify(); } }
+
+    addIncident(incidentData) {
+      const newIncident = {
+        id: `INC-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: 'unassigned',
+        reportedTime: 'Just now',
+        timestamp: Date.now(),
+        reportedBy: this.currentUser ? `${this.currentUser.name} (${this.currentUser.agency})` : 'Anonymous Responder',
+        assignedSquad: null,
+        ...incidentData
+      };
+      this.incidents.unshift(newIncident);
+      if (this.firebaseDb && this.isOnline) {
+        try { this.firebaseDb.collection('incidents').doc(newIncident.id).set(newIncident); } catch (e) {}
+      }
+      this.notify();
+      return newIncident;
+    }
+
+    updateIncidentStatus(incidentId, newStatus, squadName = null) {
+      const incident = this.incidents.find(i => i.id === incidentId);
+      if (incident) {
+        incident.status = newStatus;
+        if (squadName) incident.assignedSquad = squadName;
+        this.notify();
+      }
+    }
+
+    deployResource(resourceId, amount) {
+      const res = this.resources.find(r => r.id === resourceId);
+      if (res && res.available >= amount) {
+        res.available -= amount;
+        res.deployed += amount;
+        this.notify();
+      }
+    }
+
+    restockResource(resourceId, amount) {
+      const res = this.resources.find(r => r.id === resourceId);
+      if (res) {
+        res.available += amount;
+        res.total += amount;
+        this.notify();
+      }
+    }
+
+    sendChatMessage(channel, text) {
+      const msg = {
+        id: `msg-${Date.now()}`,
+        channel: channel,
+        sender: this.currentUser ? this.currentUser.name : 'Responder',
+        agency: this.currentUser ? this.currentUser.agency : 'Field Corp',
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      this.chatMessages.push(msg);
+      this.notify();
+    }
+
+    calculatePriorityScore(incident) {
+      let score = 0;
+      if (incident.severity === 'critical') score += 50;
+      else if (incident.severity === 'high') score += 35;
+      else score += 15;
+      score += Math.min((incident.casualties || 0) * 5, 30);
+      return Math.min(score, 99);
+    }
+  }
+
+  const store = new StateStore();
+
+  // ==========================================
+  // 3. UI VIEWS & LOGIN AUTH SCREEN
+  // ==========================================
+  let activeMapInstance = null;
+
+  function renderNavbar() {
+    const user = store.currentUser || { name: 'Field Responder', agency: 'Emergency Response' };
+
+    return `
+      <header class="app-header">
+        <div class="brand-section">
+          <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="brand-title">ReliefLink <span class="brand-tag">GLOBAL 3.5</span></div>
+        </div>
+
+        <div class="header-center">
+          <div class="role-badge-selector">
+            ${agencyUsers.map(usr => `
+              <button class="role-btn ${user.id === usr.id ? 'active' : ''}" data-user-id="${usr.id}">
+                <i class="fa-solid ${usr.role === 'coordinator' ? 'fa-user-gear' : 'fa-user-shield'}"></i>
+                ${usr.name.split(' ')[0]} (${usr.role})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <span style="font-size: 0.72rem; font-weight: 700; color: #10B981; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 12px;">
+            <i class="fa-solid fa-user-check"></i> ${user.name.split(' ')[0]}
+          </span>
+
+          <button id="btn-sign-out" class="btn btn-secondary btn-sm" title="Sign out of responder account">
+            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
+      </header>
+    `;
+  }
+
+  function renderSidebar() {
+    const currentView = store.currentView;
+    const navItems = [
+      { id: 'overview', icon: 'fa-gauge-high', label: 'Command Overview' },
+      { id: 'map', icon: 'fa-earth-americas', label: 'Global Disaster Map', badge: 'LIVE 6', badgeClass: 'critical' },
+      { id: 'resources', icon: 'fa-boxes-stacked', label: 'Resource Allocation' },
+      { id: 'report', icon: 'fa-triangle-exclamation', label: 'Report Incident' },
+      { id: 'comms', icon: 'fa-walkie-talkie', label: 'Multi-Agency Feed' },
+      { id: 'teams', icon: 'fa-users-gear', label: 'Team Deployment' },
+      { id: 'queue', icon: 'fa-list-check', label: 'Priority Task Queue' },
+      { id: 'sitrep', icon: 'fa-file-invoice-dollar', label: 'SitRep Generator' },
+      { id: 'settings', icon: 'fa-fire', label: 'Firebase & Settings' }
+    ];
+
+    return `
+      <aside class="app-sidebar">
+        <ul class="nav-menu">
+          ${navItems.map(item => `
+            <li>
+              <button class="nav-item-btn ${currentView === item.id ? 'active' : ''}" data-view="${item.id}">
+                <i class="fa-solid ${item.icon} nav-icon"></i>
+                <span>${item.label}</span>
+                ${item.badge ? `<span class="nav-badge ${item.badgeClass}">${item.badge}</span>` : ''}
+              </button>
+            </li>
+          `).join('')}
+        </ul>
+      </aside>
+    `;
+  }
+
+  function renderTicker() {
+    return `
+      <div class="alert-ticker-bar">
+        <div class="ticker-label"><i class="fa-solid fa-globe"></i> <span>LIVE GLOBAL THREAT RADAR</span></div>
+        <div class="ticker-content"><div class="ticker-text">${store.alerts.join('  •  ')}</div></div>
+      </div>
+    `;
+  }
+
+  function renderFAB() {
+    return `<button id="fab-sos-button" class="fab-sos"><i class="fa-solid fa-truck-medical"></i></button>`;
+  }
+
+  // LOGIN & AUTH SCREEN
+  function renderLoginView() {
+    return `
+      <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at center, #111827 0%, #090D16 100%);">
+        <div class="card" style="width: 100%; max-width: 520px; padding: 36px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);">
+          
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div class="brand-logo" style="width: 60px; height: 60px; font-size: 2rem; margin: 0 auto 14px auto;">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 style="font-size: 1.6rem; font-weight: 800;">ReliefLink Responder Access</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+              Multi-agency emergency responder authentication & Cloud Firestore portal
+            </p>
+          </div>
+
+          <!-- Tabs -->
+          <div style="display: flex; gap: 4px; background: var(--bg-app); padding: 4px; border-radius: var(--radius-md); margin-bottom: 20px;">
+            <button id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1;">Sign In</button>
+            <button id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1;">Create Account</button>
+          </div>
+
+          <!-- Sign In Form -->
+          <form id="auth-sign-in-form">
+            <div class="form-group">
+              <label class="form-label">Agency Email Address *</label>
+              <input type="email" id="auth-email" value="elena.vance@fema.gov" placeholder="responder@agency.gov" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="auth-password" value="Emergency2026!" placeholder="••••••••" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Responding Agency Unit</label>
+              <select id="auth-agency">
+                <option value="FEMA Regional Command">FEMA Regional Command</option>
+                <option value="Red Cross International">Red Cross International</option>
+                <option value="National Guard Search & Rescue">National Guard Search & Rescue</option>
+                <option value="UNICEF Field Operations">UNICEF Field Operations</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">
+              <i class="fa-solid fa-key"></i> Authenticate & Launch Command Portal
+            </button>
+          </form>
+
+          <!-- Quick Demo Access -->
+          <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 16px; text-align: center;">
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700;">
+              INSTANT DEMO ACCESS (1-CLICK)
+            </p>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              ${agencyUsers.map(usr => `
+                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="${usr.id}">
+                  ${usr.name.split(' ')[0]} (${usr.role})
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }
+
+  // GLOBAL DISASTER MAP & TRACKING
+  function renderMapView() {
+    return `
+      <div class="view-container" style="height: 100%;">
+        <div class="view-header" style="padding: 12px 24px;">
+          <div class="view-title-group">
+            <h1><i class="fa-solid fa-earth-americas" style="color: var(--color-primary);"></i> Live Worldwide Disaster Radar & Tracking</h1>
+            <p class="view-subtitle">Real-time global tracking across 6 active worldwide disaster zones & local tactical sectors</p>
+          </div>
+          <div class="view-actions">
+            <button id="btn-map-report" class="btn btn-critical btn-sm"><i class="fa-solid fa-plus"></i> Pin Field Incident</button>
+          </div>
+        </div>
+
+        <div class="view-body" style="padding: 12px 24px; flex: 1; display: flex; flex-direction: column;">
+          <div class="map-view-layout" style="flex: 1;">
+            
+            <div class="gis-map-wrapper">
+              <div id="disaster-map-element"></div>
+              
+              <div class="map-legend-floating">
+                <strong style="font-size: 0.75rem; display: block; margin-bottom: 6px;">WORLDWIDE DISASTER TRACKER</strong>
+                <div class="legend-item"><div class="legend-color" style="background: #EF4444;"></div> Cat 4 Cyclone / Major Quake</div>
+                <div class="legend-item"><div class="legend-color" style="background: #F59E0B;"></div> Monsoon Inundation / Volcano</div>
+              </div>
+            </div>
+
+            <!-- Global Disasters List & Inspector -->
+            <div class="card" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fa-solid fa-globe" style="color: var(--color-primary);"></i>
+                  Active Worldwide Disasters (${globalDisastersList.length})
+                </h3>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${globalDisastersList.map(dis => `
+                  <div class="card" style="padding: 12px; background: var(--bg-app); border-color: ${dis.color};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <strong style="font-size: 0.88rem;"><i class="fa-solid ${dis.icon}" style="color:${dis.color}; margin-right:4px;"></i> ${dis.name}</strong>
+                      <span class="badge ${dis.severity === 'critical' ? 'badge-critical' : 'badge-high'}">${dis.severity}</span>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">
+                      <div>Region: <strong style="color: var(--text-main);">${dis.region}</strong></div>
+                      <div>Impact: <strong style="color: var(--color-primary);">${dis.affectedCount}</strong></div>
+                      <div>Metrics: <strong>${dis.windSpeed}</strong> • Status: <strong>${dis.status}</strong></div>
+                    </div>
+                    <button class="btn btn-primary btn-sm btn-fly-world-disaster" data-lat="${dis.coordinates[0]}" data-lng="${dis.coordinates[1]}" style="width: 100%; margin-top: 8px;">
+                      <i class="fa-solid fa-crosshairs"></i> Track Live on Radar
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOverviewView() {
+    return `
+      <div class="view-container">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h1><i class="fa-solid fa-gauge-high" style="color: var(--color-primary);"></i> Command Overview</h1>
+            <p class="view-subtitle">Authenticated Responder: <strong>${store.currentUser ? store.currentUser.name : 'Officer'}</strong> (${store.currentUser ? store.currentUser.agency : 'FEMA'})</p>
+          </div>
+          <div class="view-actions">
+            <button id="btn-quick-report" class="btn btn-critical"><i class="fa-solid fa-plus"></i> Report Incident</button>
+            <button id="btn-quick-sitrep" class="btn btn-secondary"><i class="fa-solid fa-file-invoice-dollar"></i> Instant SitRep</button>
+          </div>
+        </div>
+
+        <div class="view-body">
+          <div class="kpi-grid">
+            <div class="kpi-card critical"><div class="kpi-icon"><i class="fa-solid fa-earth-americas"></i></div><div class="kpi-info"><span class="kpi-value">6 Active</span><span class="kpi-label">Worldwide Disasters</span></div></div>
+            <div class="kpi-card warning"><div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="kpi-info"><span class="kpi-value">${store.incidents.length}</span><span class="kpi-label">Field Incidents</span></div></div>
+            <div class="kpi-card success"><div class="kpi-icon"><i class="fa-solid fa-user-shield"></i></div><div class="kpi-info"><span class="kpi-value">68</span><span class="kpi-label">Active Responders</span></div></div>
+            <div class="kpi-card info"><div class="kpi-icon"><i class="fa-solid fa-boxes-packing"></i></div><div class="kpi-info"><span class="kpi-value">78%</span><span class="kpi-label">Supply Deployment</span></div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-list-ol"></i> Live Incident Stream (Firebase Firestore Synced)</h3></div>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                  <th style="padding: 10px;">SEVERITY</th>
+                  <th style="padding: 10px;">TITLE</th>
+                  <th style="padding: 10px;">LOCATION</th>
+                  <th style="padding: 10px;">STATUS</th>
+                  <th style="padding: 10px; text-align: right;">ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${store.incidents.map(inc => `
+                  <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 10px;"><span class="badge ${inc.severity === 'critical' ? 'badge-critical' : 'badge-high'}">${inc.severity}</span></td>
+                    <td style="padding: 10px;"><strong>${inc.title}</strong></td>
+                    <td style="padding: 10px; color: var(--text-muted);">${inc.locationName}</td>
+                    <td style="padding: 10px;">${inc.status}</td>
+                    <td style="padding: 10px; text-align: right;"><button class="btn btn-secondary btn-sm btn-dispatch-inc" data-inc-id="${inc.id}">Dispatch</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderResourceView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-boxes-stacked"></i> Relief Resource Allocation</h1></div>
+        <div class="view-body">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            ${store.resources.map(r => `
+              <div class="card">
+                <h3>${r.name}</h3>
+                <span style="font-size: 1.4rem; font-weight: 800; color: var(--color-primary);">${r.available} ${r.unit} available</span>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                  <button class="btn btn-secondary btn-sm btn-quick-dispatch" data-res-id="${r.id}" style="flex:1;">Dispatch</button>
+                  <button class="btn btn-secondary btn-sm btn-quick-restock" data-res-id="${r.id}">Restock</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderIncidentReportView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-triangle-exclamation"></i> Report Incident</h1></div>
+        <div class="view-body">
+          <div class="card" style="max-width: 650px; margin: 0 auto; padding: 24px;">
+            <form id="form-incident-submit">
+              <div class="form-group">
+                <label class="form-label">Incident Title *</label>
+                <input type="text" id="inc-title" placeholder="e.g. Flash Flood Evacuation" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Severity Level *</label>
+                <select id="inc-severity"><option value="critical">CRITICAL</option><option value="high">HIGH</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location Landmark *</label>
+                <input type="text" id="inc-location-name" placeholder="Sector A Landmark" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Narrative</label>
+                <textarea id="inc-description" rows="3" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-critical btn-lg" style="width:100%; margin-top:10px;">Submit Incident (Sync to Firebase)</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCommunicationView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-walkie-talkie"></i> Multi-Agency Communication Feed</h1></div>
+        <div class="view-body" style="flex:1; display:flex; flex-direction:column;">
+          <div class="chat-container">
+            <div class="chat-main">
+              <div class="chat-messages">
+                ${store.chatMessages.map(m => `<div class="message-bubble"><div class="message-content"><strong>${m.sender}</strong> (${m.agency}): ${m.text}</div></div>`).join('')}
+              </div>
+              <form id="chat-form" class="chat-input-area">
+                <input type="text" id="chat-text-input" placeholder="Type tactical message..." required style="flex:1;" />
+                <button type="submit" class="btn btn-primary btn-sm">Send</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTeamTrackerView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-users-gear"></i> Squad & Volunteer Tracker</h1></div>
+        <div class="view-body">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            ${store.teams.map(t => `<div class="card"><h3>${t.name}</h3><p>${t.agency} • ${t.currentLocation}</p></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPriorityQueueView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-list-check"></i> Priority Task Triage Queue</h1></div>
+        <div class="view-body">
+          <div class="kanban-board">
+            ${['unassigned', 'assigned', 'in_progress', 'resolved'].map(col => `
+              <div class="kanban-column">
+                <div class="column-header"><span style="text-transform:capitalize;">${col.replace('_', ' ')}</span></div>
+                ${store.incidents.filter(i => i.status === col).map(inc => `
+                  <div class="task-card">
+                    <strong>${inc.title}</strong>
+                    <button class="btn btn-secondary btn-sm btn-move-task" data-inc-id="${inc.id}" data-target="resolved" style="width:100%; margin-top:6px;">Resolve ✓</button>
+                  </div>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSitRepView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-file-invoice-dollar"></i> Situation Report (SitRep) Generator</h1><button onclick="window.print()" class="btn btn-primary btn-sm">Print SitRep</button></div>
+        <div class="view-body">
+          <div class="card" style="max-width:800px; margin:0 auto; padding:32px; background:white; color:#111;">
+            <h2>SITUATION REPORT (SITREP) #04</h2>
+            <p>AUTHENTICATED RESPONDER: <strong>${store.currentUser ? store.currentUser.name : 'Officer'}</strong></p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSettingsView() {
+    return `
+      <div class="view-container">
+        <div class="view-header"><h1><i class="fa-solid fa-fire"></i> Firebase Settings & Access Control</h1></div>
+        <div class="view-body">
+          <div class="card" style="max-width:600px;">
+            <h3>Firebase Project ID</h3>
+            <p>Current: <strong>${store.firebaseConfig.projectId}</strong></p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // EVENT BINDINGS
+  function bindEvents(container) {
+    // Auth Form
+    const authForm = container.querySelector('#auth-sign-in-form');
+    if (authForm) {
+      authForm.onsubmit = (e) => {
+        e.preventDefault();
+        const email = container.querySelector('#auth-email').value;
+        const agency = container.querySelector('#auth-agency').value;
+
+        store.setCurrentUser({
+          id: `usr-${Date.now()}`,
+          email: email,
+          name: email.split('@')[0].toUpperCase(),
+          agency: agency,
+          role: 'coordinator',
+          avatar: email.slice(0, 2).toUpperCase()
+        });
+
+        store.setCurrentView('overview');
+      };
+    }
+
+    // Demo Sign In
+    container.querySelectorAll('.demo-sign-in-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const uId = e.currentTarget.getAttribute('data-user-id');
+        const found = agencyUsers.find(u => u.id === uId);
+        if (found) {
+          store.setCurrentUser(found);
+          store.setCurrentView('overview');
+        }
+      };
+    });
+
+    // Role switcher
+    container.querySelectorAll('.role-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const uId = e.currentTarget.getAttribute('data-user-id');
+        const found = agencyUsers.find(u => u.id === uId);
+        if (found) store.setCurrentUser(found);
+      };
+    });
+
+    // Sign Out button
+    const signOutBtn = container.querySelector('#btn-sign-out');
+    if (signOutBtn) signOutBtn.onclick = () => store.signOut();
+
+    const contrastBtn = container.querySelector('#btn-toggle-contrast');
+    if (contrastBtn) contrastBtn.onclick = () => store.toggleHighContrast();
+
+    const syncBtn = container.querySelector('#btn-sync-status');
+    if (syncBtn) syncBtn.onclick = () => store.toggleNetworkStatus();
+
+    container.querySelectorAll('.nav-item-btn').forEach(btn => {
+      btn.onclick = (e) => store.setCurrentView(e.currentTarget.getAttribute('data-view'));
+    });
+
+    const fab = container.querySelector('#fab-sos-button');
+    if (fab) fab.onclick = () => store.setCurrentView('report');
+
+    const btnQuickReport = container.querySelector('#btn-quick-report');
+    if (btnQuickReport) btnQuickReport.onclick = () => store.setCurrentView('report');
+
+    const btnQuickSitrep = container.querySelector('#btn-quick-sitrep');
+    if (btnQuickSitrep) btnQuickSitrep.onclick = () => store.setCurrentView('sitrep');
+
+    container.querySelectorAll('.btn-dispatch-inc').forEach(btn => {
+      btn.onclick = (e) => store.updateIncidentStatus(e.currentTarget.getAttribute('data-inc-id'), 'in_progress', 'Squad Alpha (SAR)');
+    });
+
+    container.querySelectorAll('.btn-quick-dispatch').forEach(btn => {
+      btn.onclick = (e) => store.deployResource(e.currentTarget.getAttribute('data-res-id'), 10);
+    });
+
+    container.querySelectorAll('.btn-quick-restock').forEach(btn => {
+      btn.onclick = (e) => store.restockResource(e.currentTarget.getAttribute('data-res-id'), 50);
+    });
+
+    const incForm = container.querySelector('#form-incident-submit');
+    if (incForm) {
+      incForm.onsubmit = (e) => {
+        e.preventDefault();
+        store.addIncident({
+          title: container.querySelector('#inc-title').value,
+          severity: container.querySelector('#inc-severity').value,
+          category: 'medical',
+          locationName: container.querySelector('#inc-location-name').value,
+          casualties: 0,
+          lat: 25.7617,
+          lng: -80.1918,
+          description: container.querySelector('#inc-description').value
+        });
+        alert('Incident submitted & synced to Firebase!');
+        store.setCurrentView('overview');
+      };
+    }
+
+    const chatForm = container.querySelector('#chat-form');
+    if (chatForm) {
+      chatForm.onsubmit = (e) => {
+        e.preventDefault();
+        const input = container.querySelector('#chat-text-input');
+        if (input.value.trim()) {
+          store.sendChatMessage('global', input.value.trim());
+          input.value = '';
+        }
+      };
+    }
+
+    container.querySelectorAll('.btn-move-task').forEach(btn => {
+      btn.onclick = (e) => store.updateIncidentStatus(e.currentTarget.getAttribute('data-inc-id'), e.currentTarget.getAttribute('data-target'));
+    });
+
+    // MAP INITIALIZATION (LIVE WORLD DISASTERS)
+    if (store.currentView === 'map') {
+      setTimeout(() => {
+        const mapEl = container.querySelector('#disaster-map-element');
+        if (mapEl && window.L) {
+          if (activeMapInstance) activeMapInstance.remove();
+          const map = window.L.map('disaster-map-element').setView([20, 0], 2.3);
+          activeMapInstance = map;
+
+          window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+          globalDisastersList.forEach(dis => {
+            const marker = window.L.circleMarker(dis.coordinates, {
+              radius: 12,
+              color: dis.color,
+              fillColor: dis.color,
+              fillOpacity: 0.6
+            }).addTo(map);
+
+            marker.bindPopup(`
+              <div style="color:#111; font-family:sans-serif; max-width:200px;">
+                <h4 style="margin:0 0 4px 0; color:${dis.color};">${dis.name}</h4>
+                <p style="margin:0; font-size:0.8rem;"><strong>Region:</strong> ${dis.region}</p>
+                <p style="margin:0; font-size:0.8rem;"><strong>Impact:</strong> ${dis.affectedCount}</p>
+                <p style="margin:0 0 6px 0; font-size:0.8rem;"><strong>Status:</strong> ${dis.status}</p>
+              </div>
+            `);
+          });
+
+          container.querySelectorAll('.btn-fly-world-disaster').forEach(b => {
+            b.onclick = (e) => {
+              const lat = parseFloat(e.currentTarget.getAttribute('data-lat'));
+              const lng = parseFloat(e.currentTarget.getAttribute('data-lng'));
+              map.flyTo([lat, lng], 10);
+            };
+          });
+        }
+      }, 100);
+    }
+  }
+
+  function renderApp() {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    if (store.isHighContrast) document.body.classList.add('theme-high-contrast');
+    else document.body.classList.remove('theme-high-contrast');
+
+    if (store.currentView === 'login' || !store.currentUser) {
+      app.innerHTML = renderLoginView();
+      bindEvents(app);
+      return;
+    }
+
+    app.innerHTML = `
+      ${renderNavbar()}
+      ${renderTicker()}
+      <div class="app-main-layout">
+        ${renderSidebar()}
+        <main id="view-mount-point" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          ${
+            store.currentView === 'overview' ? renderOverviewView() :
+            store.currentView === 'map' ? renderMapView() :
+            store.currentView === 'resources' ? renderResourceView() :
+            store.currentView === 'report' ? renderIncidentReportView() :
+            store.currentView === 'comms' ? renderCommunicationView() :
+            store.currentView === 'teams' ? renderTeamTrackerView() :
+            store.currentView === 'queue' ? renderPriorityQueueView() :
+            store.currentView === 'sitrep' ? renderSitRepView() :
+            store.currentView === 'settings' ? renderSettingsView() :
+            renderOverviewView()
+          }
+        </main>
+      </div>
+      ${renderFAB()}
+    `;
+
+    bindEvents(app);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      renderApp();
+      store.subscribe(() => renderApp());
+    });
+  } else {
+    renderApp();
+    store.subscribe(() => renderApp());
+  }
+
+})();

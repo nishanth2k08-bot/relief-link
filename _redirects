@@ -1,0 +1,4 @@
+# ReliefLink — Netlify SPA Redirect Rule
+# This ensures all routes return index.html for Single Page App routing
+
+/*    /index.html   200
