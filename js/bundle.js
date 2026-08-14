@@ -355,6 +355,146 @@
       this.notify();
     }
 
+    // Firebase Email/Password Sign In
+    async signInWithEmail(email, password) {
+      if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
+      try {
+        const result = await this.firebaseAuth.signInWithEmailAndPassword(email, password);
+        const user = result.user;
+        this.setCurrentUser({
+          id: user.uid,
+          email: user.email,
+          name: user.displayName || user.email.split('@')[0],
+          agency: 'Firebase Authenticated',
+          role: 'coordinator',
+          badgeId: 'AUTH-' + user.uid.slice(0, 4).toUpperCase(),
+          avatar: (user.email || 'U').slice(0, 2).toUpperCase(),
+          authProvider: 'email'
+        });
+        this.isAuthenticated = true;
+        this.setCurrentView('overview');
+        return { success: true };
+      } catch (err) {
+        console.error('Email sign-in error:', err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Firebase Email/Password Registration
+    async registerWithEmail(email, password) {
+      if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
+      try {
+        const result = await this.firebaseAuth.createUserWithEmailAndPassword(email, password);
+        const user = result.user;
+        this.setCurrentUser({
+          id: user.uid,
+          email: user.email,
+          name: user.email.split('@')[0],
+          agency: 'New Responder',
+          role: 'responder',
+          badgeId: 'NEW-' + user.uid.slice(0, 4).toUpperCase(),
+          avatar: (user.email || 'U').slice(0, 2).toUpperCase(),
+          authProvider: 'email'
+        });
+        this.isAuthenticated = true;
+        this.setCurrentView('overview');
+        return { success: true };
+      } catch (err) {
+        console.error('Registration error:', err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Google Sign-In
+    async signInWithGoogle() {
+      if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
+      try {
+        const provider = new window.firebase.auth.GoogleAuthProvider();
+        const result = await this.firebaseAuth.signInWithPopup(provider);
+        const user = result.user;
+        this.setCurrentUser({
+          id: user.uid,
+          email: user.email,
+          name: user.displayName || user.email.split('@')[0],
+          agency: 'Google Authenticated',
+          role: 'coordinator',
+          badgeId: 'GOG-' + user.uid.slice(0, 4).toUpperCase(),
+          avatar: (user.displayName || user.email || 'G').slice(0, 2).toUpperCase(),
+          photoURL: user.photoURL || null,
+          authProvider: 'google'
+        });
+        this.isAuthenticated = true;
+        this.setCurrentView('overview');
+        return { success: true };
+      } catch (err) {
+        console.error('Google sign-in error:', err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Apple Sign-In
+    async signInWithApple() {
+      if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
+      try {
+        const provider = new window.firebase.auth.OAuthProvider('apple.com');
+        provider.addScope('email');
+        provider.addScope('name');
+        const result = await this.firebaseAuth.signInWithPopup(provider);
+        const user = result.user;
+        this.setCurrentUser({
+          id: user.uid,
+          email: user.email || 'private@apple.com',
+          name: user.displayName || 'Apple User',
+          agency: 'Apple Authenticated',
+          role: 'coordinator',
+          badgeId: 'APL-' + user.uid.slice(0, 4).toUpperCase(),
+          avatar: (user.displayName || 'AP').slice(0, 2).toUpperCase(),
+          authProvider: 'apple'
+        });
+        this.isAuthenticated = true;
+        this.setCurrentView('overview');
+        return { success: true };
+      } catch (err) {
+        console.error('Apple sign-in error:', err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Update Firebase Config from Settings page
+    updateFirebaseConfig(newConfig) {
+      this.firebaseConfig = { ...this.firebaseConfig, ...newConfig };
+      this.saveState();
+      // Re-init Firebase with new config
+      try {
+        if (window.firebase && window.firebase.apps.length) {
+          window.firebase.app().delete().then(() => {
+            window.firebase.initializeApp(this.firebaseConfig);
+            this.firebaseDb = window.firebase.firestore();
+            this.firebaseAuth = window.firebase.auth();
+            this.firebaseAuth.onAuthStateChanged((user) => {
+              if (user && !this.currentUser) {
+                this.currentUser = {
+                  id: user.uid,
+                  email: user.email,
+                  name: user.displayName || user.email.split('@')[0],
+                  agency: 'Authorized Responder Agency',
+                  role: 'coordinator',
+                  badgeId: 'AUTH-100',
+                  avatar: (user.email || 'US').slice(0, 2).toUpperCase()
+                };
+              }
+            });
+          });
+        } else if (window.firebase) {
+          window.firebase.initializeApp(this.firebaseConfig);
+          this.firebaseDb = window.firebase.firestore();
+          this.firebaseAuth = window.firebase.auth();
+        }
+      } catch (err) {
+        console.warn('Firebase re-init:', err.message);
+      }
+    }
+
     calculatePriorityScore(incident) {
       let score = 0;
       if (incident.severity === 'critical') score += 50;
@@ -453,63 +593,95 @@
   // LOGIN & AUTH SCREEN
   function renderLoginView() {
     return `
-      <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at center, #111827 0%, #090D16 100%);">
-        <div class="card" style="width: 100%; max-width: 520px; padding: 36px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);">
+      <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(239,68,68,0.08) 0%, transparent 50%), radial-gradient(circle at center, #111827 0%, #090D16 100%);">
+        <div class="card" style="width: 100%; max-width: 480px; padding: 40px 36px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 120px rgba(59,130,246,0.06); backdrop-filter: blur(20px);">
           
-          <div style="text-align: center; margin-bottom: 24px;">
-            <div class="brand-logo" style="width: 60px; height: 60px; font-size: 2rem; margin: 0 auto 14px auto;">
+          <div style="text-align: center; margin-bottom: 28px;">
+            <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; background: linear-gradient(135deg, var(--color-primary), #EF4444); box-shadow: 0 8px 32px rgba(59,130,246,0.3);">
               <i class="fa-solid fa-shield-halved"></i>
             </div>
-            <h2 style="font-size: 1.6rem; font-weight: 800;">ReliefLink Responder Access</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-              Multi-agency emergency responder authentication & Cloud Firestore portal
+            <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">ReliefLink</h2>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 6px;">
+              Emergency Response Coordination Platform
             </p>
           </div>
 
+          <!-- Social Auth Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+            <button id="btn-google-signin" style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+
+            <button id="btn-apple-signin" style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              Continue with Apple
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0;">
+            <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with email</span>
+            <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+          </div>
+
           <!-- Tabs -->
-          <div style="display: flex; gap: 4px; background: var(--bg-app); padding: 4px; border-radius: var(--radius-md); margin-bottom: 20px;">
-            <button id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1;">Sign In</button>
-            <button id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1;">Create Account</button>
+          <div id="auth-tabs" style="display: flex; gap: 4px; background: var(--bg-app); padding: 4px; border-radius: var(--radius-md); margin-bottom: 18px;">
+            <button id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.8rem;">Sign In</button>
+            <button id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.8rem;">Create Account</button>
+          </div>
+
+          <!-- Error Message -->
+          <div id="auth-error-msg" style="display:none; padding:10px 14px; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); color:#f87171; font-size:0.82rem; margin-bottom:14px; text-align:center; font-weight:500;">
           </div>
 
           <!-- Sign In Form -->
           <form id="auth-sign-in-form">
             <div class="form-group">
-              <label class="form-label">Agency Email Address *</label>
-              <input type="email" id="auth-email" value="elena.vance@fema.gov" placeholder="responder@agency.gov" required />
+              <label class="form-label">Email Address</label>
+              <input type="email" id="auth-email" placeholder="you@example.com" required style="font-size:0.9rem;" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Password *</label>
-              <input type="password" id="auth-password" value="Emergency2026!" placeholder="••••••••" required />
+              <label class="form-label">Password</label>
+              <input type="password" id="auth-password" placeholder="Enter your password" required style="font-size:0.9rem;" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="auth-agency-group">
               <label class="form-label">Responding Agency Unit</label>
-              <select id="auth-agency">
+              <select id="auth-agency" style="font-size:0.9rem;">
                 <option value="FEMA Regional Command">FEMA Regional Command</option>
                 <option value="Red Cross International">Red Cross International</option>
-                <option value="National Guard Search & Rescue">National Guard Search & Rescue</option>
+                <option value="National Guard SAR">National Guard Search & Rescue</option>
                 <option value="UNICEF Field Operations">UNICEF Field Operations</option>
+                <option value="Local Government">Local Government Agency</option>
+                <option value="Independent NGO">Independent NGO / Volunteer</option>
               </select>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">
-              <i class="fa-solid fa-key"></i> Authenticate & Launch Command Portal
+            <!-- Loading Spinner (hidden by default) -->
+            <div id="auth-loading" style="display:none; text-align:center; padding:12px;">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem; color:var(--color-primary);"></i>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">Authenticating...</p>
+            </div>
+
+            <button type="submit" id="btn-email-signin" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px; font-size:0.92rem;">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In
             </button>
           </form>
 
           <!-- Quick Demo Access -->
           <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 16px; text-align: center;">
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700;">
-              INSTANT DEMO ACCESS (1-CLICK)
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">
+              Quick Demo Access
             </p>
-            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-              ${agencyUsers.map(usr => `
-                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="${usr.id}">
-                  ${usr.name.split(' ')[0]} (${usr.role})
+            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+              ${agencyUsers.map(usr => \`
+                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="\${usr.id}" style="font-size:0.75rem; padding: 6px 10px;">
+                  \${usr.name.split(' ')[0]} (\${usr.role})
                 </button>
-              `).join('')}
+              \`).join('')}
             </div>
           </div>
 
@@ -757,14 +929,90 @@
   }
 
   function renderSettingsView() {
+    const cfg = store.firebaseConfig || {};
     return `
       <div class="view-container">
-        <div class="view-header"><h1><i class="fa-solid fa-fire"></i> Firebase Settings & Access Control</h1></div>
+        <div class="view-header">
+          <h1><i class="fa-solid fa-fire"></i> Firebase Settings &amp; Access Control</h1>
+          <p class="view-subtitle">Connect your Firebase project for real-time data sync &amp; authentication</p>
+        </div>
         <div class="view-body">
-          <div class="card" style="max-width:600px;">
-            <h3>Firebase Project ID</h3>
-            <p>Current: <strong>${store.firebaseConfig.projectId}</strong></p>
+
+          <div class="card" style="max-width:660px; padding: 28px;">
+            <h3 style="margin-bottom:6px;"><i class="fa-solid fa-key" style="color:var(--color-primary);"></i> Firebase Configuration</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">
+              Get these values from <strong>console.firebase.google.com</strong> → Project Settings → Your Apps → Web App
+            </p>
+
+            <form id="form-firebase-config" style="display:flex; flex-direction:column; gap:14px;">
+
+              <div class="form-group">
+                <label class="form-label">API Key *</label>
+                <input type="text" id="fb-api-key" placeholder="AIzaSy..." value="${cfg.apiKey || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Auth Domain *</label>
+                <input type="text" id="fb-auth-domain" placeholder="your-project.firebaseapp.com" value="${cfg.authDomain || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Project ID *</label>
+                <input type="text" id="fb-project-id" placeholder="your-project-id" value="${cfg.projectId || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Storage Bucket</label>
+                <input type="text" id="fb-storage-bucket" placeholder="your-project.appspot.com" value="${cfg.storageBucket || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Messaging Sender ID</label>
+                <input type="text" id="fb-messaging-sender-id" placeholder="123456789012" value="${cfg.messagingSenderId || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">App ID *</label>
+                <input type="text" id="fb-app-id" placeholder="1:123456789:web:abc123def456" value="${cfg.appId || ''}" style="font-family: monospace; font-size:0.85rem;" />
+              </div>
+
+              <button type="submit" id="btn-save-firebase-config" class="btn btn-primary btn-lg" style="margin-top:8px;">
+                <i class="fa-solid fa-floppy-disk"></i> Save &amp; Connect Firebase
+              </button>
+
+              <div id="firebase-save-msg" style="display:none; padding:12px; border-radius:8px; background:rgba(16,185,129,0.15); color:#10b981; font-weight:600; text-align:center;">
+                ✅ Firebase config saved! Reload the page to apply changes.
+              </div>
+            </form>
           </div>
+
+          <div class="card" style="max-width:660px; padding:24px; margin-top:16px;">
+            <h3 style="margin-bottom:10px;"><i class="fa-solid fa-shield-halved" style="color:var(--color-warning);"></i> Authorized Domains (Important!)</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+              Add your Vercel/Netlify URL to Firebase so login works on the live site:
+            </p>
+            <ol style="color:var(--text-secondary); font-size:0.85rem; line-height:2;">
+              <li>Go to <strong>console.firebase.google.com</strong> → your project</li>
+              <li>Click <strong>Authentication</strong> → <strong>Settings</strong> tab</li>
+              <li>Scroll to <strong>"Authorized domains"</strong></li>
+              <li>Click <strong>"Add domain"</strong></li>
+              <li>Paste: <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">relief-link-psi.vercel.app</code></li>
+              <li>Click <strong>"Add"</strong> ✅</li>
+            </ol>
+          </div>
+
+          <div class="card" style="max-width:660px; padding:24px; margin-top:16px;">
+            <h3 style="margin-bottom:10px;"><i class="fa-solid fa-circle-info" style="color:var(--color-info);"></i> How to Get Your Firebase Config</h3>
+            <ol style="color:var(--text-secondary); font-size:0.85rem; line-height:2.2;">
+              <li>Go to <strong>console.firebase.google.com</strong></li>
+              <li>Select your project (or create one)</li>
+              <li>Click ⚙️ <strong>gear icon</strong> → <strong>"Project settings"</strong></li>
+              <li>Scroll down to <strong>"Your apps"</strong> section</li>
+              <li>Click <strong>"&lt;/&gt;"</strong> to add a Web App if none exists</li>
+              <li>Copy all the config values and paste above</li>
+            </ol>
+          </div>
+
         </div>
       </div>
     `;
@@ -772,24 +1020,163 @@
 
   // EVENT BINDINGS
   function bindEvents(container) {
-    // Auth Form
+    // Helper to show auth error
+    function showAuthError(msg) {
+      const errEl = container.querySelector('#auth-error-msg');
+      if (errEl) {
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+        setTimeout(() => { errEl.style.display = 'none'; }, 6000);
+      }
+    }
+
+    // Helper to show/hide loading
+    function setAuthLoading(loading) {
+      const loadEl = container.querySelector('#auth-loading');
+      const btnEl = container.querySelector('#btn-email-signin');
+      if (loadEl) loadEl.style.display = loading ? 'block' : 'none';
+      if (btnEl) btnEl.style.display = loading ? 'none' : 'block';
+    }
+
+    // Tab switching (Sign In / Create Account)
+    let isRegisterMode = false;
+    const tabLogin = container.querySelector('#tab-btn-login');
+    const tabRegister = container.querySelector('#tab-btn-register');
+    const btnSubmit = container.querySelector('#btn-email-signin');
+
+    if (tabLogin) {
+      tabLogin.onclick = () => {
+        isRegisterMode = false;
+        tabLogin.className = 'btn btn-primary btn-sm';
+        tabRegister.className = 'btn btn-secondary btn-sm';
+        tabLogin.style.flex = '1';
+        tabRegister.style.flex = '1';
+        if (btnSubmit) {
+          btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+        }
+      };
+    }
+    if (tabRegister) {
+      tabRegister.onclick = () => {
+        isRegisterMode = true;
+        tabRegister.className = 'btn btn-primary btn-sm';
+        tabLogin.className = 'btn btn-secondary btn-sm';
+        tabRegister.style.flex = '1';
+        tabLogin.style.flex = '1';
+        if (btnSubmit) {
+          btnSubmit.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+        }
+      };
+    }
+
+    // Google Sign-In
+    const googleBtn = container.querySelector('#btn-google-signin');
+    if (googleBtn) {
+      googleBtn.onclick = async () => {
+        googleBtn.disabled = true;
+        googleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to Google...';
+        const result = await store.signInWithGoogle();
+        if (!result.success) {
+          showAuthError(result.error);
+          googleBtn.disabled = false;
+          googleBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google';
+        }
+      };
+    }
+
+    // Apple Sign-In
+    const appleBtn = container.querySelector('#btn-apple-signin');
+    if (appleBtn) {
+      appleBtn.onclick = async () => {
+        appleBtn.disabled = true;
+        appleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to Apple...';
+        const result = await store.signInWithApple();
+        if (!result.success) {
+          showAuthError(result.error);
+          appleBtn.disabled = false;
+          appleBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg> Continue with Apple';
+        }
+      };
+    }
+
+    // Email/Password Auth Form
     const authForm = container.querySelector('#auth-sign-in-form');
     if (authForm) {
-      authForm.onsubmit = (e) => {
+      authForm.onsubmit = async (e) => {
         e.preventDefault();
-        const email = container.querySelector('#auth-email').value;
+        const email = container.querySelector('#auth-email').value.trim();
+        const password = container.querySelector('#auth-password').value;
         const agency = container.querySelector('#auth-agency').value;
 
+        if (!email || !password) {
+          showAuthError('Please enter both email and password.');
+          return;
+        }
+
+        setAuthLoading(true);
+
+        // Try Firebase auth first
+        if (store.firebaseAuth) {
+          let result;
+          if (isRegisterMode) {
+            result = await store.registerWithEmail(email, password);
+          } else {
+            result = await store.signInWithEmail(email, password);
+          }
+
+          if (result.success) {
+            // Update agency on the user
+            if (store.currentUser) {
+              store.currentUser.agency = agency;
+              store.saveState();
+            }
+            return; // signIn/register already navigates to overview
+          } else {
+            showAuthError(result.error);
+            setAuthLoading(false);
+            return;
+          }
+        }
+
+        // Fallback: Demo sign-in if Firebase not configured
         store.setCurrentUser({
           id: `usr-${Date.now()}`,
           email: email,
           name: email.split('@')[0].toUpperCase(),
           agency: agency,
           role: 'coordinator',
-          avatar: email.slice(0, 2).toUpperCase()
+          avatar: email.slice(0, 2).toUpperCase(),
+          authProvider: 'demo'
         });
-
         store.setCurrentView('overview');
+      };
+    }
+
+    // Firebase Config Save Form
+    const fbConfigForm = container.querySelector('#form-firebase-config');
+    if (fbConfigForm) {
+      fbConfigForm.onsubmit = (e) => {
+        e.preventDefault();
+        const newConfig = {
+          apiKey: container.querySelector('#fb-api-key').value.trim(),
+          authDomain: container.querySelector('#fb-auth-domain').value.trim(),
+          projectId: container.querySelector('#fb-project-id').value.trim(),
+          storageBucket: container.querySelector('#fb-storage-bucket').value.trim(),
+          messagingSenderId: container.querySelector('#fb-messaging-sender-id').value.trim(),
+          appId: container.querySelector('#fb-app-id').value.trim()
+        };
+
+        if (!newConfig.apiKey || !newConfig.projectId) {
+          alert('API Key and Project ID are required!');
+          return;
+        }
+
+        store.updateFirebaseConfig(newConfig);
+        const msg = container.querySelector('#firebase-save-msg');
+        if (msg) {
+          msg.style.display = 'block';
+          setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }
       };
     }
 

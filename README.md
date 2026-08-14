@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ReliefLink — Real-Time Disaster Coordination Platform
 
 > Emergency Response & Coordination System for Responders, NGOs & Government Agencies
@@ -52,3 +53,7 @@ relief-link/
 ├── _redirects          # SPA routing rules
 └── .gitignore
 ```
+=======
+# ReliefLink
+Design a web-based coordination platform for emergency response teams to visualize disaster-affected zones, allocate and track relief resources, coordinate multi-agency communication, and prioritize critical incidents in real time.
+>>>>>>> e03d1814663362ca42357a5ddfe9681a9463ff61
