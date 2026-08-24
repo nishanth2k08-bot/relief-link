@@ -677,11 +677,11 @@
               Quick Demo Access
             </p>
             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-              ${agencyUsers.map(usr => \`
-                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="\${usr.id}" style="font-size:0.75rem; padding: 6px 10px;">
-                  \${usr.name.split(' ')[0]} (\${usr.role})
+              ${agencyUsers.map(usr => `
+                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="${usr.id}" style="font-size:0.75rem; padding: 6px 10px;">
+                  ${usr.name.split(' ')[0]} (${usr.role})
                 </button>
-              \`).join('')}
+              `).join('')}
             </div>
           </div>
 
