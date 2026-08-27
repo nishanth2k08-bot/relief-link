@@ -166,13 +166,13 @@
           this.chatMessages = parsed.chatMessages || initialChatMessages;
           this.alerts = parsed.alerts || emergencyAlerts;
           this.offlineQueue = parsed.offlineQueue || [];
-          this.firebaseConfig = parsed.firebaseConfig || {
-            apiKey: "AIzaSyReliefLinkDemoKey9921",
-            authDomain: "relieflink-disaster-app.firebaseapp.com",
-            projectId: "relieflink-disaster-app",
-            storageBucket: "relieflink-disaster-app.appspot.com",
-            messagingSenderId: "9988223344",
-            appId: "1:9988223344:web:abc123relieflink"
+          this.firebaseConfig = parsed.firebaseConfig && parsed.firebaseConfig.projectId !== 'relieflink-disaster-app' ? parsed.firebaseConfig : {
+            apiKey: "AIzaSyDg4vCGwpongqLXQbZkCQLL4Qc5ZlsvLlY",
+            authDomain: "relief-link-ff2a6.firebaseapp.com",
+            projectId: "relief-link-ff2a6",
+            storageBucket: "relief-link-ff2a6.firebasestorage.app",
+            messagingSenderId: "522220048520",
+            appId: "1:522220048520:web:e90fa9f3e906f2ad4a4f3d"
           };
         } catch (e) {
           this.resetToDefaults();
@@ -234,9 +234,9 @@
       this.alerts = emergencyAlerts;
       this.offlineQueue = [];
       this.firebaseConfig = {
-        apiKey: "AIzaSyReliefLinkDemoKey9921",
-        authDomain: "relieflink-disaster-app.firebaseapp.com",
-        projectId: "relieflink-disaster-app"
+        apiKey: "AIzaSyDg4vCGwpongqLXQbZkCQLL4Qc5ZlsvLlY",
+        authDomain: "relief-link-ff2a6.firebaseapp.com",
+        projectId: "relief-link-ff2a6"
       };
       this.saveState();
     }
