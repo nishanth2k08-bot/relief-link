@@ -155,6 +155,7 @@
           this.isAuthenticated = parsed.isAuthenticated || false;
           this.isOnline = parsed.isOnline !== undefined ? parsed.isOnline : true;
           this.isHighContrast = parsed.isHighContrast || false;
+          this.theme = parsed.theme === 'light' ? 'light' : 'dark';
           this.language = parsed.language || 'en';
           this.mapMode = parsed.mapMode || 'global';
           this.disasterZones = parsed.disasterZones || initialDisasterZones;
@@ -221,6 +222,7 @@
       this.isAuthenticated = false;
       this.isOnline = true;
       this.isHighContrast = false;
+      this.theme = 'dark';
       this.language = 'en';
       this.mapMode = 'global';
       this.disasterZones = initialDisasterZones;
@@ -246,6 +248,7 @@
           isAuthenticated: this.isAuthenticated,
           isOnline: this.isOnline,
           isHighContrast: this.isHighContrast,
+          theme: this.theme,
           language: this.language,
           mapMode: this.mapMode,
           disasterZones: this.disasterZones,
@@ -295,6 +298,7 @@
     setMapMode(mode) { this.mapMode = mode; this.notify(); }
     toggleNetworkStatus() { this.isOnline = !this.isOnline; this.notify(); }
     toggleHighContrast() { this.isHighContrast = !this.isHighContrast; this.notify(); }
+    toggleTheme() { this.theme = this.theme === 'dark' ? 'light' : 'dark'; this.notify(); }
     setLanguage(langCode) { if (translations[langCode]) { this.language = langCode; this.notify(); } }
 
     addIncident(incidentData) {
@@ -514,6 +518,7 @@
 
   function renderNavbar() {
     const user = store.currentUser || { name: 'Field Responder', agency: 'Emergency Response' };
+    const isLightTheme = store.theme === 'light';
 
     return `
       <header class="app-header">
@@ -534,6 +539,11 @@
         </div>
 
         <div class="header-actions">
+          <button id="btn-toggle-theme" class="btn btn-secondary btn-sm" title="Switch between light and dark appearance" aria-label="Switch to ${isLightTheme ? 'dark' : 'light'} mode" aria-pressed="${isLightTheme}">
+            <i class="fa-solid ${isLightTheme ? 'fa-moon' : 'fa-sun'}"></i>
+            <span>${isLightTheme ? 'Dark' : 'Light'}</span>
+          </button>
+
           <span style="font-size: 0.72rem; font-weight: 700; color: #10B981; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 12px;">
             <i class="fa-solid fa-user-check"></i> ${user.name.split(' ')[0]}
           </span>
@@ -593,9 +603,14 @@
   // LOGIN & AUTH SCREEN
   function renderLoginView() {
     return `
-      <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(239,68,68,0.08) 0%, transparent 50%), radial-gradient(circle at center, #111827 0%, #090D16 100%);">
+      <div class="view-container" style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(239,68,68,0.08) 0%, transparent 50%), radial-gradient(circle at center, var(--bg-header) 0%, var(--bg-app) 100%);">
         <div class="card" style="width: 100%; max-width: 480px; padding: 40px 36px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 120px rgba(59,130,246,0.06); backdrop-filter: blur(20px);">
           
+        <button id="btn-toggle-theme" class="btn btn-secondary btn-sm" style="position: absolute; top: 20px; right: 20px; z-index: 1;" title="Switch between light and dark appearance" aria-label="Switch to ${store.theme === 'light' ? 'dark' : 'light'} mode" aria-pressed="${store.theme === 'light'}">
+          <i class="fa-solid ${store.theme === 'light' ? 'fa-moon' : 'fa-sun'}"></i>
+          <span>${store.theme === 'light' ? 'Dark' : 'Light'}</span>
+        </button>
+
           <div style="text-align: center; margin-bottom: 28px;">
             <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; background: linear-gradient(135deg, var(--color-primary), #EF4444); box-shadow: 0 8px 32px rgba(59,130,246,0.3);">
               <i class="fa-solid fa-shield-halved"></i>
@@ -1209,6 +1224,9 @@
     if (contrastBtn) contrastBtn.onclick = () => store.toggleHighContrast();
 
     const syncBtn = container.querySelector('#btn-sync-status');
+    const themeBtn = container.querySelector('#btn-toggle-theme');
+    if (themeBtn) themeBtn.onclick = () => store.toggleTheme();
+
     if (syncBtn) syncBtn.onclick = () => store.toggleNetworkStatus();
 
     container.querySelectorAll('.nav-item-btn').forEach(btn => {
@@ -1318,6 +1336,8 @@
 
     if (store.isHighContrast) document.body.classList.add('theme-high-contrast');
     else document.body.classList.remove('theme-high-contrast');
+    document.body.classList.toggle('theme-light', store.theme === 'light');
+    document.body.classList.toggle('theme-dark', store.theme !== 'light');
 
     if (store.currentView === 'login' || !store.currentUser) {
       app.innerHTML = renderLoginView();
@@ -1362,3 +1382,4 @@
   }
 
 })();
+
