@@ -155,7 +155,8 @@
           this.isAuthenticated = parsed.isAuthenticated || false;
           this.isOnline = parsed.isOnline !== undefined ? parsed.isOnline : true;
           this.isHighContrast = parsed.isHighContrast || false;
-          this.theme = parsed.theme === 'dark' ? 'dark' : 'light';
+          this.hasThemePreference = parsed.hasThemePreference === true;
+          this.theme = this.hasThemePreference && parsed.theme === 'dark' ? 'dark' : 'light';
           this.language = parsed.language || 'en';
           this.mapMode = parsed.mapMode || 'global';
           this.disasterZones = parsed.disasterZones || initialDisasterZones;
@@ -222,7 +223,7 @@
       this.isAuthenticated = false;
       this.isOnline = true;
       this.isHighContrast = false;
-      this.theme = 'light';
+      this.theme = 'light'; this.hasThemePreference = false;
       this.language = 'en';
       this.mapMode = 'global';
       this.disasterZones = initialDisasterZones;
@@ -250,6 +251,7 @@
           isHighContrast: this.isHighContrast,
           theme: this.theme,
           language: this.language,
+          hasThemePreference: this.hasThemePreference,
           mapMode: this.mapMode,
           disasterZones: this.disasterZones,
           incidents: this.incidents,
@@ -298,7 +300,7 @@
     setMapMode(mode) { this.mapMode = mode; this.notify(); }
     toggleNetworkStatus() { this.isOnline = !this.isOnline; this.notify(); }
     toggleHighContrast() { this.isHighContrast = !this.isHighContrast; this.notify(); }
-    toggleTheme() { this.theme = this.theme === 'dark' ? 'light' : 'dark'; this.notify(); }
+    toggleTheme() { this.theme = this.theme === 'dark' ? 'light' : 'dark'; this.hasThemePreference = true; this.notify(); }
     setLanguage(langCode) { if (translations[langCode]) { this.language = langCode; this.notify(); } }
 
     addIncident(incidentData) {
