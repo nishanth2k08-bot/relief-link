@@ -1239,10 +1239,9 @@
     const contrastBtn = container.querySelector('#btn-toggle-contrast');
     if (contrastBtn) contrastBtn.onclick = () => store.toggleHighContrast();
 
-    if (themeBtn) themeBtn.onclick = () => { store.toggleTheme(); showToast(`Appearance switched to ${store.theme === 'light' ? 'Light' : 'Dark'} mode.`); };
     const syncBtn = container.querySelector('#btn-sync-status');
     const themeBtn = container.querySelector('#btn-toggle-theme');
-    if (themeBtn) themeBtn.onclick = () => store.toggleTheme();
+    if (themeBtn) themeBtn.onclick = () => { store.toggleTheme(); showToast(`Appearance switched to ${store.theme === 'light' ? 'Light' : 'Dark'} mode.`); };
 
     if (syncBtn) syncBtn.onclick = () => store.toggleNetworkStatus();
 
