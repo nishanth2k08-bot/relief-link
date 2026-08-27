@@ -379,6 +379,7 @@
         });
         this.isAuthenticated = true;
         this.setCurrentView('overview');
+        if (typeof showToast === 'function') showToast('Signed in successfully with email.');
         return { success: true };
       } catch (err) {
         console.error('Email sign-in error:', err);
@@ -404,6 +405,7 @@
         });
         this.isAuthenticated = true;
         this.setCurrentView('overview');
+        if (typeof showToast === 'function') showToast('Account created and signed in.');
         return { success: true };
       } catch (err) {
         console.error('Registration error:', err);
@@ -431,6 +433,7 @@
         });
         this.isAuthenticated = true;
         this.setCurrentView('overview');
+        if (typeof showToast === 'function') showToast('Signed in successfully with Google.');
         return { success: true };
       } catch (err) {
         console.error('Google sign-in error:', err);
@@ -459,6 +462,7 @@
         });
         this.isAuthenticated = true;
         this.setCurrentView('overview');
+        if (typeof showToast === 'function') showToast('Signed in successfully with Apple.');
         return { success: true };
       } catch (err) {
         console.error('Apple sign-in error:', err);
@@ -1036,6 +1040,16 @@
   }
 
   // EVENT BINDINGS
+  function showToast(message, type = 'success') {
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) { toastContainer = document.createElement('div'); toastContainer.className = 'toast-container'; document.body.appendChild(toastContainer); }
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i><span></span>`;
+    toast.querySelector('span').textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => { toast.remove(); if (!toastContainer.children.length) toastContainer.remove(); }, 4500);
+  }
   function bindEvents(container) {
     // Helper to show auth error
     function showAuthError(msg) {
@@ -1225,6 +1239,7 @@
     const contrastBtn = container.querySelector('#btn-toggle-contrast');
     if (contrastBtn) contrastBtn.onclick = () => store.toggleHighContrast();
 
+    if (themeBtn) themeBtn.onclick = () => { store.toggleTheme(); showToast(`Appearance switched to ${store.theme === 'light' ? 'Light' : 'Dark'} mode.`); };
     const syncBtn = container.querySelector('#btn-sync-status');
     const themeBtn = container.querySelector('#btn-toggle-theme');
     if (themeBtn) themeBtn.onclick = () => store.toggleTheme();
