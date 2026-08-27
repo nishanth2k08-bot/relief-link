@@ -25,6 +25,7 @@ class StateStore {
         this.currentUser = parsed.currentUser || agencyUsers[0];
         this.isOnline = parsed.isOnline !== undefined ? parsed.isOnline : true;
         this.isHighContrast = parsed.isHighContrast || false;
+        this.theme = parsed.theme === 'light' ? 'light' : 'dark';
         this.language = parsed.language || 'en';
         this.disasterZones = parsed.disasterZones || initialDisasterZones;
         this.incidents = parsed.incidents || initialIncidents;
@@ -46,6 +47,7 @@ class StateStore {
     this.currentUser = agencyUsers[0]; // Elena Vance (Coordinator)
     this.isOnline = true;
     this.isHighContrast = false;
+    this.theme = 'dark';
     this.language = 'en';
     this.disasterZones = initialDisasterZones;
     this.incidents = initialIncidents;
@@ -63,6 +65,7 @@ class StateStore {
       currentUser: this.currentUser,
       isOnline: this.isOnline,
       isHighContrast: this.isHighContrast,
+      theme: this.theme,
       language: this.language,
       disasterZones: this.disasterZones,
       incidents: this.incidents,
@@ -119,6 +122,11 @@ class StateStore {
     } else {
       document.body.classList.remove('theme-high-contrast');
     }
+    this.notify();
+  }
+
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
     this.notify();
   }
 
@@ -287,3 +295,4 @@ class StateStore {
 }
 
 export const store = new StateStore();
+
