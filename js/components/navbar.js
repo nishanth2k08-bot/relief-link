@@ -35,9 +35,9 @@ export function renderNavbar() {
       </div>
 
       <div class="header-actions">
-        <button id="btn-toggle-theme" class="btn btn-secondary btn-sm" title="Switch between light and dark appearance" aria-label="Switch to ${isLightTheme ? 'dark' : 'light'} mode" aria-pressed="${isLightTheme}">
-          <i class="fa-solid ${isLightTheme ? 'fa-moon' : 'fa-sun'}"></i>
-          <span>${isLightTheme ? 'Dark' : 'Light'}</span>
+        <button id="btn-toggle-theme" class="btn btn-secondary btn-sm" title="Switch between light and dark appearance" aria-label="${isLightTheme ? 'Light' : 'Dark'} mode enabled" aria-pressed="${isLightTheme}">
+          <i class="fa-solid ${isLightTheme ? 'fa-sun' : 'fa-moon'}"></i>
+          <span>${isLightTheme ? 'Light' : 'Dark'}</span>
         </button>
 
         <!-- High Contrast Mode Toggle -->
