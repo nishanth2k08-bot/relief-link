@@ -31,6 +31,8 @@ function renderApp() {
     document.body.classList.remove('theme-high-contrast');
   }
 
+  document.body.classList.toggle('theme-light', store.theme === 'light');
+  document.body.classList.toggle('theme-dark', store.theme !== 'light');
   // If view is 'login', render standalone login screen
   if (currentView === 'login') {
     appContainer.innerHTML = renderLoginView();
@@ -112,3 +114,4 @@ document.addEventListener('DOMContentLoaded', () => {
     renderApp();
   });
 });
+

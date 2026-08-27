@@ -8,6 +8,7 @@ export function renderNavbar() {
   const isOnline = store.isOnline;
   const pendingCount = store.offlineQueue.length;
   const isHighContrast = store.isHighContrast;
+  const isLightTheme = store.theme === 'light';
 
   return `
     <header class="app-header">
@@ -34,6 +35,11 @@ export function renderNavbar() {
       </div>
 
       <div class="header-actions">
+        <button id="btn-toggle-theme" class="btn btn-secondary btn-sm" title="Switch between light and dark appearance" aria-label="${isLightTheme ? 'Light' : 'Dark'} mode enabled" aria-pressed="${isLightTheme}">
+          <i class="fa-solid ${isLightTheme ? 'fa-sun' : 'fa-moon'}"></i>
+          <span>${isLightTheme ? 'Light' : 'Dark'}</span>
+        </button>
+
         <!-- High Contrast Mode Toggle -->
         <button id="btn-toggle-contrast" class="btn btn-secondary btn-sm" title="Toggle WCAG 2.1 AA High Contrast Mode for sunlight visibility">
           <i class="fa-solid ${isHighContrast ? 'fa-eye' : 'fa-circle-half-stroke'}"></i>
@@ -75,6 +81,11 @@ export function bindNavbarEvents(container) {
   if (contrastBtn) {
     contrastBtn.addEventListener('click', () => store.toggleHighContrast());
   }
+  const themeBtn = container.querySelector('#btn-toggle-theme');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => store.toggleTheme());
+  }
+
 
   // Language selector
   const langSelect = container.querySelector('#select-language');
@@ -88,3 +99,4 @@ export function bindNavbarEvents(container) {
     syncBtn.addEventListener('click', () => store.toggleNetworkStatus());
   }
 }
+
