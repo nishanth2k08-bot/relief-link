@@ -25,7 +25,7 @@ class StateStore {
         this.currentUser = parsed.currentUser || agencyUsers[0];
         this.isOnline = parsed.isOnline !== undefined ? parsed.isOnline : true;
         this.isHighContrast = parsed.isHighContrast || false;
-        this.theme = parsed.theme === 'light' ? 'light' : 'dark';
+        this.theme = parsed.theme === 'dark' ? 'dark' : 'light';
         this.language = parsed.language || 'en';
         this.disasterZones = parsed.disasterZones || initialDisasterZones;
         this.incidents = parsed.incidents || initialIncidents;
@@ -47,7 +47,7 @@ class StateStore {
     this.currentUser = agencyUsers[0]; // Elena Vance (Coordinator)
     this.isOnline = true;
     this.isHighContrast = false;
-    this.theme = 'dark';
+    this.theme = 'light';
     this.language = 'en';
     this.disasterZones = initialDisasterZones;
     this.incidents = initialIncidents;
