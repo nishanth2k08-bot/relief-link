@@ -1459,11 +1459,19 @@
             });
 
           globalDisastersList.forEach(dis => {
-            const marker = window.L.circleMarker(dis.coordinates, {
-              radius: 12,
-              color: dis.color,
-              fillColor: dis.color,
-              fillOpacity: 0.6
+            const iconClass = dis.icon.includes('wind') ? 'storm' :
+              dis.icon.includes('house-crack') ? 'quake' :
+              dis.icon.includes('water') || dis.icon.includes('flood') ? 'flood' :
+              dis.icon.includes('fire') ? 'fire' :
+              dis.icon.includes('mountain') ? 'volcano' : 'hazard';
+            const marker = window.L.marker(dis.coordinates, {
+              icon: window.L.divIcon({
+                className: 'disaster-3d-icon',
+                iconSize: [58, 70],
+                iconAnchor: [29, 56],
+                popupAnchor: [0, -52],
+                html: `<div class="disaster-3d-marker ${iconClass}" style="--disaster-color:${dis.color};"><div class="disaster-3d-glow"></div><div class="disaster-3d-core"><i class="fa-solid ${dis.icon}"></i></div><div class="disaster-3d-shadow"></div><span>${dis.severity}</span></div>`
+              })
             }).addTo(map);
 
             marker.bindPopup(`
