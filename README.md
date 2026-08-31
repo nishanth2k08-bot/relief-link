@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 # ReliefLink — Real-Time Disaster Coordination Platform
 
 > Emergency Response & Coordination System for Responders, NGOs & Government Agencies
 
 ## 🌐 Live Demo
-[View on Netlify →](https://your-site.netlify.app)
+[Open the Vercel deployment →](https://relief-link-psi.vercel.app/)
 
 ## Features
 - 🗺️ Live World Disaster Map (Leaflet.js)
@@ -16,6 +15,7 @@
 - 🔐 Firebase Authentication
 - 🌍 Multi-language Support (EN/ES/FR/AR/HI)
 - ♿ WCAG 2.1 AA High Contrast Mode
+- ☀️ Light and dark appearance modes with toast confirmation
 - 📶 Offline Queue with Auto-Sync
 
 ## Tech Stack
@@ -23,37 +23,13 @@
 - **Maps**: Leaflet.js + OpenStreetMap
 - **Charts**: Chart.js
 - **Auth/Database**: Firebase (Auth + Firestore)
-- **Hosting**: Netlify
+- **Hosting**: Vercel
 
 ## Setup
-
-### 1. Firebase Configuration
+### Firebase Configuration
 1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Create a new project (or use existing)
-3. Enable **Authentication** → Email/Password
-4. Enable **Firestore Database**
-5. Copy your Firebase config keys
-6. In the Settings page of the app, paste your Firebase config
+2. Enable Authentication providers and Firestore.
+3. Copy the Firebase web config into the app settings if needed.
 
-### 2. Local Development
+### Local Development
 Simply open `index.html` in a browser — no build step required!
-
-### 3. Deploy to Netlify
-See the deployment guide below.
-
-## File Structure
-```
-relief-link/
-├── index.html          # Main entry point
-├── css/
-│   └── styles.css      # Full design system
-├── js/
-│   └── bundle.js       # Complete app bundle
-├── netlify.toml        # Netlify deployment config
-├── _redirects          # SPA routing rules
-└── .gitignore
-```
-=======
-# ReliefLink
-Design a web-based coordination platform for emergency response teams to visualize disaster-affected zones, allocate and track relief resources, coordinate multi-agency communication, and prioritize critical incidents in real time.
->>>>>>> e03d1814663362ca42357a5ddfe9681a9463ff61
