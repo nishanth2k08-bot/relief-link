@@ -1459,11 +1459,11 @@
             });
 
           globalDisastersList.forEach(dis => {
-            const iconClass = dis.icon.includes('wind') ? 'storm' :
-              dis.icon.includes('house-crack') ? 'quake' :
-              dis.icon.includes('water') || dis.icon.includes('flood') ? 'flood' :
-              dis.icon.includes('fire') ? 'fire' :
-              dis.icon.includes('mountain') ? 'volcano' : 'hazard';
+            const iconClass = dis.type === 'cyclone' ? 'storm' :
+              dis.type === 'earthquake' ? 'quake' :
+              dis.type === 'flood' ? 'flood' :
+              dis.type === 'wildfire' ? 'fire' :
+              dis.type === 'volcano' ? 'volcano' : 'hazard';
             const marker = window.L.marker(dis.coordinates, {
               icon: window.L.divIcon({
                 className: 'disaster-3d-icon',
