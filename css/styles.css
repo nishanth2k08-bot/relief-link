@@ -761,6 +761,46 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
 }
 
+.map-live-controls {
+  max-width: 230px;
+  color: var(--text-main);
+}
+
+.map-live-controls strong {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.map-live-controls label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.map-live-controls input {
+  accent-color: var(--color-primary);
+}
+
+.map-live-controls em {
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 0.7rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.map-live-controls small {
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin-top: 2px;
+  padding-top: 7px;
+}
+
 .map-legend-floating {
   position: absolute;
   bottom: 14px;
