@@ -718,9 +718,10 @@
         <div class="view-header" style="padding: 12px 24px;">
           <div class="view-title-group">
             <h1><i class="fa-solid fa-earth-americas" style="color: var(--color-primary);"></i> Live Worldwide Disaster Radar & Tracking</h1>
-            <p class="view-subtitle">Real-time global tracking across 6 active worldwide disaster zones & local tactical sectors</p>
+            <p class="view-subtitle">Whole-Earth operational view with smooth live weather, wildfire and satellite intelligence layers</p>
           </div>
           <div class="view-actions">
+            <button id="btn-global-map" class="btn btn-secondary btn-sm"><i class="fa-solid fa-globe"></i> Whole World</button>
             <button id="btn-map-report" class="btn btn-critical btn-sm"><i class="fa-solid fa-plus"></i> Pin Field Incident</button>
           </div>
         </div>
@@ -1330,8 +1331,23 @@
         const mapEl = container.querySelector('#disaster-map-element');
         if (mapEl && window.L) {
           if (activeMapInstance) activeMapInstance.remove();
-          const map = window.L.map('disaster-map-element').setView([20, 0], 2.3);
+          const map = window.L.map('disaster-map-element', {
+            zoomControl: false,
+            minZoom: 1.5,
+            maxZoom: 15,
+            zoomSnap: 0.25,
+            zoomDelta: 0.25,
+            wheelPxPerZoomLevel: 110,
+            inertia: true,
+            inertiaDeceleration: 2800,
+            worldCopyJump: true,
+            preferCanvas: true,
+            fadeAnimation: true,
+            markerZoomAnimation: true,
+            zoomAnimation: true
+          }).setView([18, 0], 2.1);
           activeMapInstance = map;
+          window.L.control.zoom({ position: 'topleft', zoomInTitle: 'Zoom in smoothly', zoomOutTitle: 'Zoom out smoothly' }).addTo(map);
 
           window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
@@ -1376,20 +1392,27 @@
               return response.json();
             })
             .then((data) => {
-              const alerts = (data.features || []).slice(0, 150);
+              // Use lightweight alert beacons instead of large geometry outlines.
+              // This keeps panning and fractional zoom smooth at a global scale.
+              const alerts = (data.features || []).slice(0, 75);
               alerts.forEach((alert) => {
                 const properties = alert.properties || {};
                 const label = escapeHTML(properties.event || 'Weather alert');
                 const area = escapeHTML(properties.areaDesc || 'Affected area');
                 const severity = escapeHTML(properties.severity || 'Unknown');
                 const popup = `<div style="color:#111; font-family:sans-serif; max-width:240px;"><h4 style="margin:0 0 4px;color:#0369A1;">${label}</h4><p style="margin:0 0 4px;font-size:.8rem;"><strong>Severity:</strong> ${severity}</p><p style="margin:0;font-size:.78rem;"><strong>Area:</strong> ${area}</p><p style="margin:6px 0 0;font-size:.72rem;">Source: NOAA National Weather Service</p></div>`;
-                if (alert.geometry) {
-                  window.L.geoJSON(alert.geometry, {
-                    style: { color: '#38BDF8', weight: 1.5, fillColor: '#38BDF8', fillOpacity: 0.12 }
-                  }).bindPopup(popup).addTo(weatherAlertsLayer);
-                } else if (properties.geocode && properties.geocode.SAME && properties.geocode.SAME.length) {
-                  // Some alerts have no mappable geometry; they remain counted but are not pinned.
-                }
+                if (!alert.geometry) return;
+                const alertShape = window.L.geoJSON(alert.geometry);
+                const bounds = alertShape.getBounds();
+                if (!bounds.isValid()) return;
+                window.L.circleMarker(bounds.getCenter(), {
+                  radius: 6,
+                  color: '#7DD3FC',
+                  weight: 2,
+                  fillColor: '#0EA5E9',
+                  fillOpacity: 0.75,
+                  className: 'live-alert-beacon'
+                }).bindPopup(popup).addTo(weatherAlertsLayer);
               });
               if (weatherCount) weatherCount.textContent = `${alerts.length} active`;
               if (container.querySelector('#layer-weather-alerts')?.checked) weatherAlertsLayer.addTo(map);
@@ -1408,13 +1431,13 @@
             })
             .then((data) => {
               const events = data.events || [];
-              events.forEach((event) => {
+              events.slice(0, 75).forEach((event) => {
                 const geometry = event.geometry && event.geometry[0];
                 if (!geometry || !Array.isArray(geometry.coordinates)) return;
                 const [longitude, latitude] = geometry.coordinates;
                 if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return;
                 const marker = window.L.circleMarker([latitude, longitude], {
-                  radius: 7, color: '#22C55E', fillColor: '#22C55E', fillOpacity: 0.76, weight: 2
+                  radius: 7, color: '#FDE047', fillColor: '#F97316', fillOpacity: 0.86, weight: 2, className: 'live-fire-beacon'
                 }).bindPopup(`<div style="color:#111; font-family:sans-serif; max-width:220px;"><h4 style="margin:0 0 4px;color:#15803D;">${escapeHTML(event.title)}</h4><p style="margin:0;font-size:.78rem;">Active wildfire event</p><p style="margin:6px 0 0;font-size:.72rem;">Source: NASA EONET</p></div>`);
                 marker.addTo(wildfiresLayer);
               });
@@ -1444,6 +1467,14 @@
               </div>
             `);
           });
+
+          const wholeWorldButton = container.querySelector('#btn-global-map');
+          if (wholeWorldButton) {
+            wholeWorldButton.onclick = () => map.flyTo([18, 0], 2.1, { duration: 1.15, easeLinearity: 0.25 });
+          }
+
+          const mapReportButton = container.querySelector('#btn-map-report');
+          if (mapReportButton) mapReportButton.onclick = () => store.setCurrentView('report');
 
           container.querySelectorAll('.btn-fly-world-disaster').forEach(b => {
             b.onclick = (e) => {
