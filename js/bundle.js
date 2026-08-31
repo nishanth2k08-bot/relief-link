@@ -730,11 +730,30 @@
             
             <div class="gis-map-wrapper">
               <div id="disaster-map-element"></div>
+
+              <div class="map-controls-floating map-live-controls">
+                <strong><i class="fa-solid fa-satellite-dish"></i> LIVE INTELLIGENCE</strong>
+                <label>
+                  <input type="checkbox" id="layer-satellite" />
+                  <span>NASA satellite imagery</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="layer-weather-alerts" checked />
+                  <span>NOAA weather alerts <em id="weather-alert-count">Loading…</em></span>
+                </label>
+                <label>
+                  <input type="checkbox" id="layer-wildfires" checked />
+                  <span>NASA active wildfires <em id="wildfire-count">Loading…</em></span>
+                </label>
+                <small id="live-data-status" aria-live="polite">Connecting to public disaster feeds…</small>
+              </div>
               
               <div class="map-legend-floating">
                 <strong style="font-size: 0.75rem; display: block; margin-bottom: 6px;">WORLDWIDE DISASTER TRACKER</strong>
                 <div class="legend-item"><div class="legend-color" style="background: #EF4444;"></div> Cat 4 Cyclone / Major Quake</div>
                 <div class="legend-item"><div class="legend-color" style="background: #F59E0B;"></div> Monsoon Inundation / Volcano</div>
+                <div class="legend-item"><div class="legend-color" style="background: #22C55E;"></div> NASA active wildfire event</div>
+                <div class="legend-item"><div class="legend-color" style="background: #38BDF8;"></div> NOAA weather alert</div>
               </div>
             </div>
 
@@ -1315,6 +1334,98 @@
           activeMapInstance = map;
 
           window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+          // Public live-data layers. Satellite imagery is optional because it can
+          // obscure tactical markers at low zoom; alerts and wildfire events load
+          // automatically when their public feeds are available.
+          const satelliteDate = new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+          const satelliteLayer = window.L.tileLayer(
+            `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${satelliteDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+            { maxZoom: 9, opacity: 0.72, attribution: 'NASA GIBS satellite imagery' }
+          );
+          const weatherAlertsLayer = window.L.featureGroup();
+          const wildfiresLayer = window.L.featureGroup();
+          const liveStatus = container.querySelector('#live-data-status');
+          const weatherCount = container.querySelector('#weather-alert-count');
+          const wildfireCount = container.querySelector('#wildfire-count');
+          const escapeHTML = (value) => String(value || '').replace(/[&<>'"]/g, (character) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+          }[character]));
+          const updateLiveStatus = () => {
+            if (!liveStatus) return;
+            const weatherText = weatherCount ? weatherCount.textContent : 'Unavailable';
+            const fireText = wildfireCount ? wildfireCount.textContent : 'Unavailable';
+            liveStatus.textContent = `Live feeds • Alerts: ${weatherText} • Wildfires: ${fireText}`;
+          };
+          const toggleLayer = (selector, layer) => {
+            const input = container.querySelector(selector);
+            if (!input) return;
+            input.onchange = () => {
+              if (input.checked) layer.addTo(map);
+              else map.removeLayer(layer);
+            };
+          };
+          toggleLayer('#layer-satellite', satelliteLayer);
+          toggleLayer('#layer-weather-alerts', weatherAlertsLayer);
+          toggleLayer('#layer-wildfires', wildfiresLayer);
+
+          // NOAA National Weather Service: current U.S. public weather alerts.
+          fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert')
+            .then((response) => {
+              if (!response.ok) throw new Error(`NOAA response ${response.status}`);
+              return response.json();
+            })
+            .then((data) => {
+              const alerts = (data.features || []).slice(0, 150);
+              alerts.forEach((alert) => {
+                const properties = alert.properties || {};
+                const label = escapeHTML(properties.event || 'Weather alert');
+                const area = escapeHTML(properties.areaDesc || 'Affected area');
+                const severity = escapeHTML(properties.severity || 'Unknown');
+                const popup = `<div style="color:#111; font-family:sans-serif; max-width:240px;"><h4 style="margin:0 0 4px;color:#0369A1;">${label}</h4><p style="margin:0 0 4px;font-size:.8rem;"><strong>Severity:</strong> ${severity}</p><p style="margin:0;font-size:.78rem;"><strong>Area:</strong> ${area}</p><p style="margin:6px 0 0;font-size:.72rem;">Source: NOAA National Weather Service</p></div>`;
+                if (alert.geometry) {
+                  window.L.geoJSON(alert.geometry, {
+                    style: { color: '#38BDF8', weight: 1.5, fillColor: '#38BDF8', fillOpacity: 0.12 }
+                  }).bindPopup(popup).addTo(weatherAlertsLayer);
+                } else if (properties.geocode && properties.geocode.SAME && properties.geocode.SAME.length) {
+                  // Some alerts have no mappable geometry; they remain counted but are not pinned.
+                }
+              });
+              if (weatherCount) weatherCount.textContent = `${alerts.length} active`;
+              if (container.querySelector('#layer-weather-alerts')?.checked) weatherAlertsLayer.addTo(map);
+              updateLiveStatus();
+            })
+            .catch(() => {
+              if (weatherCount) weatherCount.textContent = 'Unavailable';
+              updateLiveStatus();
+            });
+
+          // NASA EONET: open natural-event records, filtered to active wildfires.
+          fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&limit=100')
+            .then((response) => {
+              if (!response.ok) throw new Error(`NASA response ${response.status}`);
+              return response.json();
+            })
+            .then((data) => {
+              const events = data.events || [];
+              events.forEach((event) => {
+                const geometry = event.geometry && event.geometry[0];
+                if (!geometry || !Array.isArray(geometry.coordinates)) return;
+                const [longitude, latitude] = geometry.coordinates;
+                if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return;
+                const marker = window.L.circleMarker([latitude, longitude], {
+                  radius: 7, color: '#22C55E', fillColor: '#22C55E', fillOpacity: 0.76, weight: 2
+                }).bindPopup(`<div style="color:#111; font-family:sans-serif; max-width:220px;"><h4 style="margin:0 0 4px;color:#15803D;">${escapeHTML(event.title)}</h4><p style="margin:0;font-size:.78rem;">Active wildfire event</p><p style="margin:6px 0 0;font-size:.72rem;">Source: NASA EONET</p></div>`);
+                marker.addTo(wildfiresLayer);
+              });
+              if (wildfireCount) wildfireCount.textContent = `${wildfiresLayer.getLayers().length} active`;
+              if (container.querySelector('#layer-wildfires')?.checked) wildfiresLayer.addTo(map);
+              updateLiveStatus();
+            })
+            .catch(() => {
+              if (wildfireCount) wildfireCount.textContent = 'Unavailable';
+              updateLiveStatus();
+            });
 
           globalDisastersList.forEach(dis => {
             const marker = window.L.circleMarker(dis.coordinates, {
