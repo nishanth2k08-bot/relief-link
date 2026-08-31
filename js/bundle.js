@@ -735,8 +735,8 @@
               <div class="map-controls-floating map-live-controls">
                 <strong><i class="fa-solid fa-satellite-dish"></i> LIVE INTELLIGENCE</strong>
                 <label>
-                  <input type="checkbox" id="layer-satellite" />
-                  <span>NASA satellite imagery</span>
+                  <input type="checkbox" id="layer-satellite" checked />
+                  <span>High-resolution satellite view</span>
                 </label>
                 <label>
                   <input type="checkbox" id="layer-weather-alerts" checked />
@@ -1351,14 +1351,21 @@
 
           window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-          // Public live-data layers. Satellite imagery is optional because it can
-          // obscure tactical markers at low zoom; alerts and wildfire events load
-          // automatically when their public feeds are available.
-          const satelliteDate = new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
-          const satelliteLayer = window.L.tileLayer(
-            `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${satelliteDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
-            { maxZoom: 9, opacity: 0.72, attribution: 'NASA GIBS satellite imagery' }
-          );
+          // High-resolution global imagery and place labels, presented as a
+          // Google-Earth-style hybrid view without copying Google's tiles.
+          const satelliteLayer = window.L.layerGroup([
+            window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+              maxZoom: 19,
+              maxNativeZoom: 19,
+              attribution: 'Tiles &copy; Esri'
+            }),
+            window.L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+              maxZoom: 19,
+              maxNativeZoom: 19,
+              opacity: 0.9,
+              attribution: 'Labels &copy; Esri'
+            })
+          ]);
           const weatherAlertsLayer = window.L.featureGroup();
           const wildfiresLayer = window.L.featureGroup();
           const liveStatus = container.querySelector('#live-data-status');
@@ -1384,6 +1391,7 @@
           toggleLayer('#layer-satellite', satelliteLayer);
           toggleLayer('#layer-weather-alerts', weatherAlertsLayer);
           toggleLayer('#layer-wildfires', wildfiresLayer);
+          if (container.querySelector('#layer-satellite')?.checked) satelliteLayer.addTo(map);
 
           // NOAA National Weather Service: current U.S. public weather alerts.
           fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert')
