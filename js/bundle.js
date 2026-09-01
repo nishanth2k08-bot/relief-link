@@ -648,9 +648,9 @@
             <div class="form-group">
               <label class="form-label">Mobile Number</label>
               <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:var(--bg-app); align-items:stretch;">
-                <select id="phone-country-code" aria-label="Country code" style="border:none; background:transparent; padding:10px 8px 10px 10px; color:var(--text-main); width:120px; min-width:120px; font-size:0.76rem; text-align:center; border-right:1px solid var(--border-color);">
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+7">🇷🇺 +7</option>
+                <select id="phone-country-code" aria-label="Country code" style="border:none; background:var(--bg-card); color:var(--text-main); padding:10px 8px 10px 10px; width:120px; min-width:120px; font-size:0.76rem; text-align:center; border-right:1px solid var(--border-color); appearance:none; -webkit-appearance:none; -moz-appearance:none; cursor:pointer;">
+                  <option value="+1" style="color:var(--text-main); background:var(--bg-card);">🇺🇸 +1</option>
+                  <option value="+7" style="color:var(--text-main); background:var(--bg-card);">🇷🇺 +7</option>
                   <option value="+20">🇪🇬 +20</option>
                   <option value="+27">🇿🇦 +27</option>
                   <option value="+30">🇬🇷 +30</option>

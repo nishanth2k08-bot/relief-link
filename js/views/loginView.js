@@ -224,9 +224,9 @@ export function renderLoginView() {
           <div class="form-group">
             <label class="form-label">Mobile Number</label>
             <div style="display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-app); align-items: stretch;">
-              <select id="phone-country-code" aria-label="Country code" style="border: none; background: transparent; padding: 10px 8px 10px 10px; color: var(--text-main); width: 120px; min-width: 120px; font-size: 0.76rem; text-align: center; border-right: 1px solid var(--border-color);">
+              <select id="phone-country-code" aria-label="Country code" style="border: none; background: var(--bg-card); color: var(--text-main); padding: 10px 8px 10px 10px; width: 120px; min-width: 120px; font-size: 0.76rem; text-align: center; border-right: 1px solid var(--border-color); appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer;">
                 ${phoneCountryOptions.map(option => `
-                  <option value="${option.value}" ${option.value === '+91' ? 'selected' : ''}>${option.label}</option>
+                  <option value="${option.value}" ${option.value === '+91' ? 'selected' : ''} style="color: var(--text-main); background: var(--bg-card);">${option.label}</option>
                 `).join('')}
               </select>
               <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; min-width: 0; padding: 12px 14px; color: var(--text-main); font-size: 0.95rem;" />
