@@ -237,19 +237,43 @@ export function renderLoginView() {
     <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 120px);">
       <div class="card" style="width: 100%; max-width: 480px; padding: 32px;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div class="brand-logo" style="width: 56px; height: 56px; font-size: 1.8rem; margin: 0 auto 16px auto;">
-            <i class="fa-solid fa-shield-halved"></i>
+          <div class="brand-logo" style="width: 66px; height: 66px; font-size: 1.9rem; margin: 0 auto 16px auto; background: linear-gradient(135deg, #ff7a59 0%, #fbbf24 30%, #3b82f6 100%); box-shadow: 0 16px 32px rgba(59,130,246,0.28); border: 1px solid rgba(255,255,255,0.12);">
+            <i class="fa-solid fa-shield-heart"></i>
           </div>
-          <h2 style="font-size: 1.5rem; font-weight: 800;">Agency Authentication</h2>
+          <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">ReliefLink</h2>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-            Secure multi-agency access for emergency responders & command units
+            Emergency Response Coordination Platform
           </p>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px;">
+            <span style="font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Sign in</span>
+            <button type="button" id="btn-show-create-account" class="btn btn-secondary btn-sm" style="padding: 8px 12px; border-radius: 999px;">Create account</button>
+          </div>
           <button type="button" class="btn btn-secondary btn-sm" style="justify-content: center; width: 100%;">Continue with Google</button>
           <button type="button" class="btn btn-secondary btn-sm" style="justify-content: center; width: 100%;">Continue with Apple</button>
           <button type="button" id="btn-phone-signin" class="btn btn-secondary btn-sm" style="justify-content: center; width: 100%;">Sign in with Phone Number</button>
+        </div>
+
+        <div id="create-account-panel" style="display: none; margin-bottom: 18px; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px; background: rgba(59,130,246,0.04);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;">
+            <h3 style="font-size: 1.05rem; margin: 0;">Create account</h3>
+            <button type="button" id="btn-back-to-login" class="btn btn-secondary btn-sm" style="padding: 6px 10px; border-radius: 999px;">Back</button>
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="create-account-name" placeholder="Your full name" />
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="create-account-email" placeholder="name@agency.org" />
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Password</label>
+            <input type="password" id="create-account-password" placeholder="Create a password" />
+          </div>
+          <button type="button" id="btn-submit-create-account" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">Create Account</button>
         </div>
 
         <div id="phone-auth-panel" style="display: none; margin-bottom: 18px;">
@@ -350,6 +374,13 @@ export function bindLoginViewEvents(container) {
   const form = container.querySelector('#agency-login-form');
   const phonePanel = container.querySelector('#phone-auth-panel');
   const phoneBtn = container.querySelector('#btn-phone-signin');
+  const createAccountPanel = container.querySelector('#create-account-panel');
+  const btnShowCreateAccount = container.querySelector('#btn-show-create-account');
+  const btnBackToLogin = container.querySelector('#btn-back-to-login');
+  const btnSubmitCreateAccount = container.querySelector('#btn-submit-create-account');
+  const createInputName = container.querySelector('#create-account-name');
+  const createInputEmail = container.querySelector('#create-account-email');
+  const createInputPassword = container.querySelector('#create-account-password');
   const countryCode = container.querySelector('#phone-country-code');
   const phoneInput = container.querySelector('#phone-number-input');
   const otpSection = container.querySelector('#otp-section');
@@ -403,6 +434,53 @@ export function bindLoginViewEvents(container) {
 
   if (tabRegister) {
     tabRegister.addEventListener('click', () => setRegisterMode(true));
+  }
+
+  function showCreateAccountPanel(show) {
+    if (!createAccountPanel) return;
+    createAccountPanel.style.display = show ? 'block' : 'none';
+    if (show) {
+      if (phonePanel) phonePanel.style.display = 'none';
+      if (otpSection) otpSection.style.display = 'none';
+      if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+      if (otpInput) otpInput.value = '';
+    }
+  }
+
+  if (btnShowCreateAccount) {
+    btnShowCreateAccount.addEventListener('click', () => showCreateAccountPanel(true));
+  }
+
+  if (btnBackToLogin) {
+    btnBackToLogin.addEventListener('click', () => showCreateAccountPanel(false));
+  }
+
+  if (btnSubmitCreateAccount) {
+    btnSubmitCreateAccount.addEventListener('click', () => {
+      const name = createInputName?.value.trim();
+      const email = createInputEmail?.value.trim();
+      const password = createInputPassword?.value.trim();
+
+      if (!name || !email || !password) {
+        showNotification('Please complete your name, email, and password.', 'error');
+        return;
+      }
+
+      store.setCurrentUser({
+        id: `usr-create-${Date.now()}`,
+        name,
+        role: 'admin',
+        agency: 'New User Registration',
+        badgeId: 'NEW-USER',
+        avatar: name.slice(0, 2).toUpperCase(),
+        authMethod: 'create-account',
+        email,
+        phone: null
+      });
+
+      showNotification(`Account created for ${email}. Welcome aboard!`, 'success');
+      store.setCurrentView('overview');
+    });
   }
 
   function enforcePhoneValidation() {
