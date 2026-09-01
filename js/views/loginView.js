@@ -319,16 +319,16 @@ export function renderLoginView() {
 
         <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0;">
           <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
-          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with email</span>
+          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or continue securely</span>
           <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
         </div>
 
-        <div id="auth-tabs" style="display: flex; gap: 6px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 16px;">
+        <div id="auth-tabs" style="display: none; gap: 6px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 16px;">
           <button type="button" id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1;">Sign In</button>
           <button type="button" id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1;">Create Account</button>
         </div>
 
-        <form id="agency-login-form">
+        <form id="agency-login-form" style="display: none;">
           <div class="form-group">
             <label class="form-label">Responding Agency</label>
             <select id="login-agency-select">
@@ -364,19 +364,6 @@ export function renderLoginView() {
             <span>Authenticate & Launch Ops</span>
           </button>
         </form>
-
-        <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 16px; text-align: center;">
-          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 600;">
-            QUICK FIELD DEMO ACCESS
-          </p>
-          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-            ${agencyUsers.map(usr => `
-              <button class="btn btn-secondary btn-sm demo-user-btn" data-user-id="${usr.id}">
-                ${usr.name.split(' ')[0]} (${usr.role})
-              </button>
-            `).join('')}
-          </div>
-        </div>
       </div>
     </div>
   `;
