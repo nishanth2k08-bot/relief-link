@@ -17,7 +17,12 @@ export function renderLoginView() {
           </p>
         </div>
 
-        <form id="agency-login-form">
+        <div style="display: flex; gap: 8px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 16px;">
+          <button type="button" class="btn btn-primary btn-sm auth-method-btn active" data-auth-method="email" style="flex: 1;">Email</button>
+          <button type="button" class="btn btn-secondary btn-sm auth-method-btn" data-auth-method="phone" style="flex: 1;">Phone Number</button>
+        </div>
+
+        <form id="agency-login-form" data-auth-method="email">
           <div class="form-group">
             <label class="form-label">Responding Agency</label>
             <select id="login-agency-select">
@@ -27,6 +32,11 @@ export function renderLoginView() {
               <option value="National Guard Command">National Guard Command</option>
               <option value="Civil Defense Volunteers">Civil Defense Volunteers</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="login-identifier-label">Agency Email Address</label>
+            <input type="email" id="login-identifier" value="elena.vance@fema.gov" placeholder="responder@agency.gov" required />
           </div>
 
           <div class="form-group">
@@ -68,20 +78,48 @@ export function renderLoginView() {
 
 export function bindLoginViewEvents(container) {
   const form = container.querySelector('#agency-login-form');
+  const identifierInput = container.querySelector('#login-identifier');
+  const label = container.querySelector('#login-identifier-label');
+
+  function setAuthMethod(method) {
+    if (!form || !identifierInput || !label) return;
+    form.dataset.authMethod = method;
+    const isPhone = method === 'phone';
+    identifierInput.type = isPhone ? 'tel' : 'email';
+    identifierInput.value = isPhone ? '+1 555 010 2048' : 'elena.vance@fema.gov';
+    identifierInput.placeholder = isPhone ? '+1 (555) 010-2048' : 'responder@agency.gov';
+    label.textContent = isPhone ? 'Mobile Phone Number' : 'Agency Email Address';
+
+    container.querySelectorAll('.auth-method-btn').forEach(btn => {
+      const active = btn.dataset.authMethod === method;
+      btn.classList.toggle('btn-primary', active);
+      btn.classList.toggle('btn-secondary', !active);
+    });
+  }
+
+  container.querySelectorAll('.auth-method-btn').forEach(btn => {
+    btn.addEventListener('click', () => setAuthMethod(btn.dataset.authMethod));
+  });
+
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const agency = container.querySelector('#login-agency-select').value;
       const badgeId = container.querySelector('#login-badge-id').value;
       const role = container.querySelector('#login-role-select').value;
+      const authMethod = form.dataset.authMethod || 'email';
+      const identifier = identifierInput.value.trim();
 
       store.setCurrentUser({
         id: `usr-custom-${Date.now()}`,
-        name: `Officer ${badgeId}`,
+        name: authMethod === 'phone' ? `Officer ${identifier}` : `Officer ${badgeId}`,
         role: role,
         agency: agency,
         badgeId: badgeId,
-        avatar: badgeId.slice(0, 2).toUpperCase()
+        avatar: badgeId.slice(0, 2).toUpperCase(),
+        authMethod,
+        phone: authMethod === 'phone' ? identifier : null,
+        email: authMethod === 'email' ? identifier : null
       });
 
       store.setCurrentView('overview');

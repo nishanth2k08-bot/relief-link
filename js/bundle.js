@@ -572,8 +572,7 @@
       { id: 'comms', icon: 'fa-walkie-talkie', label: 'Multi-Agency Feed' },
       { id: 'teams', icon: 'fa-users-gear', label: 'Team Deployment' },
       { id: 'queue', icon: 'fa-list-check', label: 'Priority Task Queue' },
-      { id: 'sitrep', icon: 'fa-file-invoice-dollar', label: 'SitRep Generator' },
-      { id: 'settings', icon: 'fa-fire', label: 'Firebase & Settings' }
+      { id: 'sitrep', icon: 'fa-file-invoice-dollar', label: 'SitRep Generator' }
     ];
 
     return `
@@ -643,14 +642,13 @@
           <!-- Divider -->
           <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0;">
             <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
-            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with email</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with agency credentials</span>
             <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
           </div>
 
-          <!-- Tabs -->
-          <div id="auth-tabs" style="display: flex; gap: 4px; background: var(--bg-app); padding: 4px; border-radius: var(--radius-md); margin-bottom: 18px;">
-            <button id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.8rem;">Sign In</button>
-            <button id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.8rem;">Create Account</button>
+          <div style="display: flex; gap: 8px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 18px;">
+            <button type="button" class="btn btn-primary btn-sm auth-method-btn active" data-auth-method="email" style="flex: 1; font-size: 0.8rem;">Email</button>
+            <button type="button" class="btn btn-secondary btn-sm auth-method-btn" data-auth-method="phone" style="flex: 1; font-size: 0.8rem;">Phone Number</button>
           </div>
 
           <!-- Error Message -->
@@ -658,9 +656,9 @@
           </div>
 
           <!-- Sign In Form -->
-          <form id="auth-sign-in-form">
+          <form id="auth-sign-in-form" data-auth-method="email">
             <div class="form-group">
-              <label class="form-label">Email Address</label>
+              <label id="auth-identifier-label" class="form-label">Email Address</label>
               <input type="email" id="auth-email" placeholder="you@example.com" required style="font-size:0.9rem;" />
             </div>
 
@@ -964,96 +962,6 @@
             <h2>SITUATION REPORT (SITREP) #04</h2>
             <p>AUTHENTICATED RESPONDER: <strong>${store.currentUser ? store.currentUser.name : 'Officer'}</strong></p>
           </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderSettingsView() {
-    const cfg = store.firebaseConfig || {};
-    return `
-      <div class="view-container">
-        <div class="view-header">
-          <h1><i class="fa-solid fa-fire"></i> Firebase Settings &amp; Access Control</h1>
-          <p class="view-subtitle">Connect your Firebase project for real-time data sync &amp; authentication</p>
-        </div>
-        <div class="view-body">
-
-          <div class="card" style="max-width:660px; padding: 28px;">
-            <h3 style="margin-bottom:6px;"><i class="fa-solid fa-key" style="color:var(--color-primary);"></i> Firebase Configuration</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">
-              Get these values from <strong>console.firebase.google.com</strong> → Project Settings → Your Apps → Web App
-            </p>
-
-            <form id="form-firebase-config" style="display:flex; flex-direction:column; gap:14px;">
-
-              <div class="form-group">
-                <label class="form-label">API Key *</label>
-                <input type="text" id="fb-api-key" placeholder="AIzaSy..." value="${cfg.apiKey || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Auth Domain *</label>
-                <input type="text" id="fb-auth-domain" placeholder="your-project.firebaseapp.com" value="${cfg.authDomain || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Project ID *</label>
-                <input type="text" id="fb-project-id" placeholder="your-project-id" value="${cfg.projectId || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Storage Bucket</label>
-                <input type="text" id="fb-storage-bucket" placeholder="your-project.appspot.com" value="${cfg.storageBucket || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Messaging Sender ID</label>
-                <input type="text" id="fb-messaging-sender-id" placeholder="123456789012" value="${cfg.messagingSenderId || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">App ID *</label>
-                <input type="text" id="fb-app-id" placeholder="1:123456789:web:abc123def456" value="${cfg.appId || ''}" style="font-family: monospace; font-size:0.85rem;" />
-              </div>
-
-              <button type="submit" id="btn-save-firebase-config" class="btn btn-primary btn-lg" style="margin-top:8px;">
-                <i class="fa-solid fa-floppy-disk"></i> Save &amp; Connect Firebase
-              </button>
-
-              <div id="firebase-save-msg" style="display:none; padding:12px; border-radius:8px; background:rgba(16,185,129,0.15); color:#10b981; font-weight:600; text-align:center;">
-                ✅ Firebase config saved! Reload the page to apply changes.
-              </div>
-            </form>
-          </div>
-
-          <div class="card" style="max-width:660px; padding:24px; margin-top:16px;">
-            <h3 style="margin-bottom:10px;"><i class="fa-solid fa-shield-halved" style="color:var(--color-warning);"></i> Authorized Domains (Important!)</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
-              Add your Vercel/Netlify URL to Firebase so login works on the live site:
-            </p>
-            <ol style="color:var(--text-secondary); font-size:0.85rem; line-height:2;">
-              <li>Go to <strong>console.firebase.google.com</strong> → your project</li>
-              <li>Click <strong>Authentication</strong> → <strong>Settings</strong> tab</li>
-              <li>Scroll to <strong>"Authorized domains"</strong></li>
-              <li>Click <strong>"Add domain"</strong></li>
-              <li>Paste: <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">relief-link-psi.vercel.app</code></li>
-              <li>Click <strong>"Add"</strong> ✅</li>
-            </ol>
-          </div>
-
-          <div class="card" style="max-width:660px; padding:24px; margin-top:16px;">
-            <h3 style="margin-bottom:10px;"><i class="fa-solid fa-circle-info" style="color:var(--color-info);"></i> How to Get Your Firebase Config</h3>
-            <ol style="color:var(--text-secondary); font-size:0.85rem; line-height:2.2;">
-              <li>Go to <strong>console.firebase.google.com</strong></li>
-              <li>Select your project (or create one)</li>
-              <li>Click ⚙️ <strong>gear icon</strong> → <strong>"Project settings"</strong></li>
-              <li>Scroll down to <strong>"Your apps"</strong> section</li>
-              <li>Click <strong>"&lt;/&gt;"</strong> to add a Web App if none exists</li>
-              <li>Copy all the config values and paste above</li>
-            </ol>
-          </div>
-
         </div>
       </div>
     `;
@@ -1534,7 +1442,6 @@
             store.currentView === 'teams' ? renderTeamTrackerView() :
             store.currentView === 'queue' ? renderPriorityQueueView() :
             store.currentView === 'sitrep' ? renderSitRepView() :
-            store.currentView === 'settings' ? renderSettingsView() :
             renderOverviewView()
           }
         </main>

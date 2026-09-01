@@ -16,8 +16,7 @@ export function renderSidebar() {
     { id: 'comms', icon: 'fa-walkie-talkie', label: store.t('commsFeed') },
     { id: 'teams', icon: 'fa-users-gear', label: store.t('teamTracker') },
     { id: 'queue', icon: 'fa-list-check', label: store.t('priorityQueue'), badge: unassignedCount > 0 ? `${unassignedCount}` : null, badgeClass: 'info' },
-    { id: 'sitrep', icon: 'fa-file-invoice-dollar', label: store.t('sitRep') },
-    { id: 'settings', icon: 'fa-gears', label: store.t('settings') }
+    { id: 'sitrep', icon: 'fa-file-invoice-dollar', label: store.t('sitRep') }
   ];
 
   return `

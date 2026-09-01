@@ -16,7 +16,6 @@ import { renderCommunicationView, bindCommunicationViewEvents } from './views/co
 import { renderTeamTrackerView, bindTeamTrackerViewEvents } from './views/teamTrackerView.js';
 import { renderPriorityQueueView, bindPriorityQueueViewEvents } from './views/priorityQueueView.js';
 import { renderSitRepView, bindSitRepViewEvents } from './views/sitRepView.js';
-import { renderSettingsView, bindSettingsViewEvents } from './views/settingsView.js';
 
 function renderApp() {
   const appContainer = document.getElementById('app');
@@ -95,10 +94,6 @@ function renderApp() {
     case 'sitrep':
       mountPoint.innerHTML = renderSitRepView();
       bindSitRepViewEvents(mountPoint);
-      break;
-    case 'settings':
-      mountPoint.innerHTML = renderSettingsView();
-      bindSettingsViewEvents(mountPoint);
       break;
     default:
       mountPoint.innerHTML = renderOverviewView();
