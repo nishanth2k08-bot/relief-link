@@ -617,8 +617,20 @@
         </button>
 
           <div style="text-align: center; margin-bottom: 28px;">
-            <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; background: linear-gradient(135deg, #ff7a59 0%, #fbbf24 30%, #3b82f6 100%); box-shadow: 0 16px 32px rgba(59,130,246,0.28); border: 1px solid rgba(255,255,255,0.12);">
-              <i class="fa-solid fa-shield-heart"></i>
+            <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; padding: 0; background: transparent; box-shadow: none; border: none; display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 64 64" width="100%" height="100%" aria-label="ReliefLink logo" style="display:block; filter: drop-shadow(0 14px 26px rgba(59,130,246,0.38));">
+                <defs>
+                  <linearGradient id="relief-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+                    <stop offset="0%" stop-color="#FF8A5B"/>
+                    <stop offset="38%" stop-color="#F59E0B"/>
+                    <stop offset="100%" stop-color="#3B82F6"/>
+                  </linearGradient>
+                </defs>
+                <path d="M32 4.5L51 11.5V29.8C51 42.2 43.2 51.8 32 58.8C20.8 51.8 13 42.2 13 29.8V11.5L32 4.5Z" fill="url(#relief-gradient)" stroke="rgba(255,255,255,0.7)" stroke-width="1.6"/>
+                <path d="M32 17.6v28.8M17.6 32h28.8" stroke="white" stroke-width="5.6" stroke-linecap="round"/>
+                <path d="M24.5 24.8L32 19.2L39.5 24.8V29.8L32 35.4L24.5 29.8V24.8Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.38)" stroke-width="1.2"/>
+                <path d="M22 44.5L32 51L42 44.5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
             <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">ReliefLink</h2>
             <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 6px;">
