@@ -637,6 +637,37 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
               Continue with Apple
             </button>
+
+            <button id="btn-phone-signin" type="button" style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              Sign in with Phone Number
+            </button>
+          </div>
+
+          <div id="phone-auth-panel" style="display:none; margin-bottom:20px;">
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:var(--bg-app);">
+                <select id="phone-country-code" aria-label="Country code" style="border:none; background:transparent; padding:12px 10px; color:var(--text-main); min-width:120px; border-right:1px solid var(--border-color);">
+                  <option value="+91" selected>India (+91)</option>
+                  <option value="+1">USA (+1)</option>
+                  <option value="+44">UK (+44)</option>
+                </select>
+                <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border:none; background:transparent; flex:1; padding:12px 14px; color:var(--text-main);" />
+              </div>
+            </div>
+
+            <div id="otp-section" style="display:none; margin-top:12px;">
+              <div class="form-group">
+                <label class="form-label">Enter OTP</label>
+                <input type="text" id="otp-input" maxlength="6" placeholder="6-digit code" style="letter-spacing:0.2em; text-align:center;" />
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <button type="button" id="btn-send-otp" class="btn btn-primary btn-sm" style="flex:1;">Send OTP</button>
+              <button type="button" id="btn-verify-otp" class="btn btn-secondary btn-sm" style="flex:1; display:none;">Verify OTP</button>
+            </div>
           </div>
 
           <!-- Divider -->
@@ -646,9 +677,9 @@
             <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
           </div>
 
-          <div style="display: flex; gap: 8px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 18px;">
-            <button type="button" class="btn btn-primary btn-sm auth-method-btn active" data-auth-method="email" style="flex: 1; font-size: 0.8rem;">Email</button>
-            <button type="button" class="btn btn-secondary btn-sm auth-method-btn" data-auth-method="phone" style="flex: 1; font-size: 0.8rem;">Phone Number</button>
+          <div id="auth-tabs" style="display: flex; gap: 6px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 18px;">
+            <button type="button" id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.8rem;">Sign In</button>
+            <button type="button" id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.8rem;">Create Account</button>
           </div>
 
           <!-- Error Message -->
@@ -1002,6 +1033,14 @@
     const tabLogin = container.querySelector('#tab-btn-login');
     const tabRegister = container.querySelector('#tab-btn-register');
     const btnSubmit = container.querySelector('#btn-email-signin');
+    const phoneBtn = container.querySelector('#btn-phone-signin');
+    const phonePanel = container.querySelector('#phone-auth-panel');
+    const phoneCountryCode = container.querySelector('#phone-country-code');
+    const phoneNumberInput = container.querySelector('#phone-number-input');
+    const otpSection = container.querySelector('#otp-section');
+    const otpInput = container.querySelector('#otp-input');
+    const sendOtpBtn = container.querySelector('#btn-send-otp');
+    const verifyOtpBtn = container.querySelector('#btn-verify-otp');
 
     if (tabLogin) {
       tabLogin.onclick = () => {
@@ -1025,6 +1064,59 @@
         if (btnSubmit) {
           btnSubmit.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
         }
+      };
+    }
+
+    if (phoneBtn && phonePanel) {
+      phoneBtn.onclick = () => {
+        const isVisible = phonePanel.style.display === 'block';
+        phonePanel.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+          if (otpSection) otpSection.style.display = 'none';
+          if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+          if (otpInput) otpInput.value = '';
+        }
+      };
+    }
+
+    if (sendOtpBtn && phoneNumberInput && phoneCountryCode && otpSection && verifyOtpBtn && otpInput) {
+      sendOtpBtn.onclick = () => {
+        const value = phoneNumberInput.value.trim();
+        if (!value) {
+          phoneNumberInput.focus();
+          return;
+        }
+
+        otpSection.style.display = 'block';
+        verifyOtpBtn.style.display = 'inline-flex';
+        sendOtpBtn.textContent = 'Resend OTP';
+        otpInput.value = '123456';
+        otpInput.setAttribute('placeholder', `OTP sent to ${phoneCountryCode.value} ${value}`);
+      };
+    }
+
+    if (verifyOtpBtn && phoneNumberInput && phoneCountryCode && otpInput) {
+      verifyOtpBtn.onclick = () => {
+        const otpCode = otpInput.value.trim();
+        if (!otpCode) {
+          otpInput.focus();
+          return;
+        }
+
+        const agency = container.querySelector('#auth-agency')?.value || 'FEMA Regional Command';
+        const phoneValue = `${phoneCountryCode.value} ${phoneNumberInput.value.trim()}`;
+        store.setCurrentUser({
+          id: `usr-phone-${Date.now()}`,
+          name: `Officer ${phoneValue}`,
+          agency: agency,
+          role: 'responder',
+          badgeId: 'OTP-USER',
+          avatar: 'PH',
+          authMethod: 'phone',
+          phone: phoneValue,
+          email: null
+        });
+        store.setCurrentView('overview');
       };
     }
 
