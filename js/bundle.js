@@ -648,10 +648,119 @@
             <div class="form-group">
               <label class="form-label">Mobile Number</label>
               <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:var(--bg-app); align-items:stretch;">
-                <select id="phone-country-code" aria-label="Country code" style="border:none; background:transparent; padding:10px 8px 10px 10px; color:var(--text-main); width:82px; min-width:82px; font-size:1.2rem; text-align:center; border-right:1px solid var(--border-color);">
-                  <option value="+91" selected>🇮🇳</option>
-                  <option value="+1">🇺🇸</option>
-                  <option value="+44">🇬🇧</option>
+                <select id="phone-country-code" aria-label="Country code" style="border:none; background:transparent; padding:10px 8px 10px 10px; color:var(--text-main); width:120px; min-width:120px; font-size:0.76rem; text-align:center; border-right:1px solid var(--border-color);">
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+7">🇷🇺 +7</option>
+                  <option value="+20">🇪🇬 +20</option>
+                  <option value="+27">🇿🇦 +27</option>
+                  <option value="+30">🇬🇷 +30</option>
+                  <option value="+31">🇳🇱 +31</option>
+                  <option value="+32">🇧🇪 +32</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+36">🇭🇺 +36</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+41">🇨🇭 +41</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+45">🇩🇰 +45</option>
+                  <option value="+46">🇸🇪 +46</option>
+                  <option value="+47">🇳🇴 +47</option>
+                  <option value="+48">🇵🇱 +48</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+51">🇵🇪 +51</option>
+                  <option value="+52">🇲🇽 +52</option>
+                  <option value="+54">🇦🇷 +54</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+56">🇨🇱 +56</option>
+                  <option value="+57">🇨🇴 +57</option>
+                  <option value="+60">🇲🇾 +60</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+62">🇮🇩 +62</option>
+                  <option value="+63">🇵🇭 +63</option>
+                  <option value="+64">🇳🇿 +64</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+66">🇹🇭 +66</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+82">🇰🇷 +82</option>
+                  <option value="+84">🇻🇳 +84</option>
+                  <option value="+86">🇨🇳 +86</option>
+                  <option value="+90">🇹🇷 +90</option>
+                  <option value="+91" selected>🇮🇳 +91</option>
+                  <option value="+92">🇵🇰 +92</option>
+                  <option value="+94">🇱🇰 +94</option>
+                  <option value="+98">🇮🇷 +98</option>
+                  <option value="+212">🇲🇦 +212</option>
+                  <option value="+213">🇩🇿 +213</option>
+                  <option value="+216">🇹🇳 +216</option>
+                  <option value="+220">🇬🇲 +220</option>
+                  <option value="+221">🇸🇳 +221</option>
+                  <option value="+234">🇳🇬 +234</option>
+                  <option value="+254">🇰🇪 +254</option>
+                  <option value="+255">🇹🇿 +255</option>
+                  <option value="+256">🇺🇬 +256</option>
+                  <option value="+263">🇿🇼 +263</option>
+                  <option value="+352">🇱🇺 +352</option>
+                  <option value="+353">🇮🇪 +353</option>
+                  <option value="+355">🇦🇱 +355</option>
+                  <option value="+358">🇫🇮 +358</option>
+                  <option value="+370">🇱🇹 +370</option>
+                  <option value="+371">🇱🇻 +371</option>
+                  <option value="+372">🇪🇪 +372</option>
+                  <option value="+375">🇧🇾 +375</option>
+                  <option value="+380">🇺🇦 +380</option>
+                  <option value="+385">🇭🇷 +385</option>
+                  <option value="+420">🇨🇿 +420</option>
+                  <option value="+421">🇸🇰 +421</option>
+                  <option value="+500">🇫🇰 +500</option>
+                  <option value="+501">🇧🇿 +501</option>
+                  <option value="+502">🇬🇹 +502</option>
+                  <option value="+503">🇸🇻 +503</option>
+                  <option value="+504">🇭🇳 +504</option>
+                  <option value="+507">🇵🇦 +507</option>
+                  <option value="+509">🇭🇹 +509</option>
+                  <option value="+591">🇧🇴 +591</option>
+                  <option value="+592">🇬🇾 +592</option>
+                  <option value="+593">🇪🇨 +593</option>
+                  <option value="+595">🇵🇾 +595</option>
+                  <option value="+597">🇸🇷 +597</option>
+                  <option value="+598">🇺🇾 +598</option>
+                  <option value="+599">🇨🇼 +599</option>
+                  <option value="+673">🇧🇳 +673</option>
+                  <option value="+674">🇳🇷 +674</option>
+                  <option value="+675">🇵🇬 +675</option>
+                  <option value="+676">🇹🇴 +676</option>
+                  <option value="+677">🇸🇧 +677</option>
+                  <option value="+678">🇻🇺 +678</option>
+                  <option value="+679">🇫🇯 +679</option>
+                  <option value="+680">🇵🇼 +680</option>
+                  <option value="+682">🇨🇰 +682</option>
+                  <option value="+852">🇭🇰 +852</option>
+                  <option value="+853">🇲🇴 +853</option>
+                  <option value="+855">🇰🇭 +855</option>
+                  <option value="+856">🇱🇦 +856</option>
+                  <option value="+880">🇧🇩 +880</option>
+                  <option value="+886">🇹🇼 +886</option>
+                  <option value="+960">🇲🇻 +960</option>
+                  <option value="+961">🇱🇧 +961</option>
+                  <option value="+962">🇯🇴 +962</option>
+                  <option value="+963">🇸🇾 +963</option>
+                  <option value="+964">🇮🇶 +964</option>
+                  <option value="+965">🇰🇼 +965</option>
+                  <option value="+966">🇸🇦 +966</option>
+                  <option value="+967">🇾🇪 +967</option>
+                  <option value="+968">🇴🇲 +968</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+972">🇮🇱 +972</option>
+                  <option value="+974">🇶🇦 +974</option>
+                  <option value="+975">🇧🇹 +975</option>
+                  <option value="+976">🇲🇳 +976</option>
+                  <option value="+977">🇳🇵 +977</option>
+                  <option value="+992">🇹🇯 +992</option>
+                  <option value="+993">🇹🇲 +993</option>
+                  <option value="+994">🇦🇿 +994</option>
+                  <option value="+995">🇬🇪 +995</option>
+                  <option value="+996">🇰🇬 +996</option>
+                  <option value="+998">🇺🇿 +998</option>
                 </select>
                 <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border:none; background:transparent; flex:1; min-width:0; padding:12px 14px; color:var(--text-main); font-size:0.95rem;" />
               </div>
@@ -1010,6 +1119,27 @@
     setTimeout(() => { toast.remove(); if (!toastContainer.children.length) toastContainer.remove(); }, 4500);
   }
   function bindEvents(container) {
+    function showNotification(message, type = 'success') {
+      const existing = container.querySelector('.login-notification');
+      if (existing) existing.remove();
+      const notice = document.createElement('div');
+      notice.className = 'login-notification';
+      notice.textContent = message;
+      notice.style.position = 'fixed';
+      notice.style.bottom = '20px';
+      notice.style.right = '20px';
+      notice.style.zIndex = '9999';
+      notice.style.padding = '12px 16px';
+      notice.style.borderRadius = '10px';
+      notice.style.fontSize = '0.8rem';
+      notice.style.fontWeight = '700';
+      notice.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)';
+      notice.style.color = '#fff';
+      notice.style.background = type === 'error' ? '#ef4444' : '#10b981';
+      document.body.appendChild(notice);
+      setTimeout(() => notice.remove(), 3500);
+    }
+
     // Helper to show auth error
     function showAuthError(msg) {
       const errEl = container.querySelector('#auth-error-msg');
@@ -1030,6 +1160,7 @@
 
     // Tab switching (Sign In / Create Account)
     let isRegisterMode = false;
+    let generatedOtp = '';
     const tabLogin = container.querySelector('#tab-btn-login');
     const tabRegister = container.querySelector('#tab-btn-register');
     const btnSubmit = container.querySelector('#btn-email-signin');
@@ -1084,14 +1215,17 @@
         const value = phoneNumberInput.value.trim();
         if (!value) {
           phoneNumberInput.focus();
+          showNotification('Please enter a mobile number first.', 'error');
           return;
         }
 
+        generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
         otpSection.style.display = 'block';
         verifyOtpBtn.style.display = 'inline-flex';
         sendOtpBtn.textContent = 'Resend OTP';
-        otpInput.value = '123456';
+        otpInput.value = '';
         otpInput.setAttribute('placeholder', `OTP sent to ${phoneCountryCode.value} ${value}`);
+        showNotification(`OTP sent to ${phoneCountryCode.value} ${value}. Demo code: ${generatedOtp}`, 'success');
       };
     }
 
@@ -1100,6 +1234,12 @@
         const otpCode = otpInput.value.trim();
         if (!otpCode) {
           otpInput.focus();
+          showNotification('Please enter the OTP.', 'error');
+          return;
+        }
+
+        if (otpCode !== generatedOtp) {
+          showNotification('Invalid OTP. Please use the generated code.', 'error');
           return;
         }
 
@@ -1116,6 +1256,7 @@
           phone: phoneValue,
           email: null
         });
+        showNotification(`Signed in successfully with phone number ${phoneValue}.`, 'success');
         store.setCurrentView('overview');
       };
     }
@@ -1176,12 +1317,12 @@
           }
 
           if (result.success) {
-            // Update agency on the user
             if (store.currentUser) {
               store.currentUser.agency = agency;
               store.saveState();
             }
-            return; // signIn/register already navigates to overview
+            showNotification(`Signed in successfully with ${email}.`, 'success');
+            return;
           } else {
             showAuthError(result.error);
             setAuthLoading(false);
@@ -1199,6 +1340,7 @@
           avatar: email.slice(0, 2).toUpperCase(),
           authProvider: 'demo'
         });
+        showNotification(`Signed in successfully with ${email}.`, 'success');
         store.setCurrentView('overview');
       };
     }
