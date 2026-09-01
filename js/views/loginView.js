@@ -26,13 +26,13 @@ export function renderLoginView() {
         <div id="phone-auth-panel" style="display: none; margin-bottom: 18px;">
           <div class="form-group">
             <label class="form-label">Mobile Number</label>
-            <div style="display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-app);">
-              <select id="phone-country-code" aria-label="Country code" style="border: none; background: transparent; padding: 12px 10px; color: var(--text-main); min-width: 120px; border-right: 1px solid var(--border-color);">
-                <option value="+91" selected>India (+91)</option>
-                <option value="+1">USA (+1)</option>
-                <option value="+44">UK (+44)</option>
+            <div style="display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-app); align-items: stretch;">
+              <select id="phone-country-code" aria-label="Country code" style="border: none; background: transparent; padding: 10px 8px 10px 10px; color: var(--text-main); width: 82px; min-width: 82px; font-size: 1.2rem; text-align: center; border-right: 1px solid var(--border-color);">
+                <option value="+91" selected>🇮🇳</option>
+                <option value="+1">🇺🇸</option>
+                <option value="+44">🇬🇧</option>
               </select>
-              <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; padding: 12px 14px; color: var(--text-main);" />
+              <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; min-width: 0; padding: 12px 14px; color: var(--text-main); font-size: 0.95rem;" />
             </div>
           </div>
 
