@@ -200,6 +200,38 @@ const phoneCountryOptions = [
   { value: '+998', label: '🇺🇿 +998' }
 ];
 
+const phoneMaxLengthByCountry = {
+  '+1': 10, '+7': 10, '+20': 9, '+27': 9, '+30': 10, '+31': 10, '+32': 9, '+33': 9,
+  '+34': 9, '+36': 9, '+39': 10, '+40': 9, '+41': 9, '+43': 10, '+44': 10, '+45': 8,
+  '+46': 10, '+47': 8, '+48': 9, '+49': 11, '+51': 9, '+52': 10, '+53': 8, '+54': 10,
+  '+55': 11, '+56': 9, '+57': 10, '+58': 10, '+60': 9, '+61': 9, '+62': 11, '+63': 10,
+  '+64': 9, '+65': 8, '+66': 9, '+81': 10, '+82': 10, '+84': 9, '+86': 11, '+90': 10,
+  '+91': 10, '+92': 10, '+93': 9, '+94': 9, '+95': 9, '+98': 10, '+211': 9, '+212': 9,
+  '+213': 9, '+216': 8, '+218': 9, '+220': 7, '+221': 9, '+222': 9, '+223': 9, '+224': 9,
+  '+225': 10, '+226': 8, '+227': 8, '+228': 8, '+229': 8, '+230': 8, '+231': 7, '+232': 8,
+  '+233': 9, '+234': 10, '+235': 8, '+236': 8, '+237': 9, '+238': 7, '+239': 7, '+240': 9,
+  '+241': 9, '+242': 9, '+243': 10, '+244': 9, '+245': 7, '+248': 7, '+249': 9, '+250': 9,
+  '+251': 9, '+252': 8, '+253': 6, '+254': 9, '+255': 9, '+256': 9, '+257': 8, '+258': 9,
+  '+260': 9, '+261': 9, '+262': 9, '+263': 9, '+264': 9, '+265': 9, '+266': 8, '+267': 7,
+  '+268': 8, '+269': 7, '+352': 9, '+353': 9, '+354': 7, '+355': 9, '+356': 8, '+357': 8,
+  '+358': 11, '+370': 8, '+371': 8, '+372': 8, '+373': 8, '+374': 8, '+375': 9, '+376': 6,
+  '+377': 9, '+378': 9, '+380': 9, '+381': 9, '+382': 8, '+385': 9, '+386': 8, '+387': 8,
+  '+389': 8, '+420': 9, '+421': 9, '+423': 9, '+500': 5, '+501': 7, '+502': 8, '+503': 8,
+  '+504': 8, '+505': 8, '+506': 8, '+507': 8, '+508': 6, '+509': 8, '+590': 9, '+591': 8,
+  '+592': 7, '+593': 9, '+594': 9, '+595': 9, '+596': 9, '+597': 7, '+598': 8, '+599': 8,
+  '+670': 7, '+672': 5, '+673': 7, '+674': 7, '+675': 8, '+676': 5, '+677': 5, '+678': 5,
+  '+679': 7, '+680': 7, '+681': 6, '+682': 5, '+683': 4, '+685': 7, '+687': 6, '+688': 5,
+  '+689': 6, '+690': 5, '+691': 7, '+692': 7, '+850': 10, '+852': 8, '+853': 8, '+855': 9,
+  '+856': 9, '+880': 10, '+886': 9, '+960': 7, '+961': 8, '+962': 9, '+963': 9, '+964': 10,
+  '+965': 8, '+966': 9, '+967': 9, '+968': 8, '+971': 9, '+972': 9, '+973': 8, '+974': 8,
+  '+975': 8, '+976': 8, '+977': 10, '+992': 9, '+993': 8, '+994': 9, '+995': 9, '+996': 9,
+  '+998': 9
+};
+
+function getPhoneLengthLimit(countryCodeValue) {
+  return phoneMaxLengthByCountry[countryCodeValue] || 15;
+}
+
 export function renderLoginView() {
   return `
     <div class="view-container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 120px);">
@@ -224,12 +256,15 @@ export function renderLoginView() {
           <div class="form-group">
             <label class="form-label">Mobile Number</label>
             <div style="display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-app); align-items: stretch;">
-              <select id="phone-country-code" aria-label="Country code" style="border: none; background: var(--bg-card); color: var(--text-main); padding: 10px 8px 10px 10px; width: 120px; min-width: 120px; font-size: 0.76rem; text-align: center; border-right: 1px solid var(--border-color); appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer;">
-                ${phoneCountryOptions.map(option => `
-                  <option value="${option.value}" ${option.value === '+91' ? 'selected' : ''} style="color: var(--text-main); background: var(--bg-card);">${option.label}</option>
-                `).join('')}
-              </select>
-              <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; min-width: 0; padding: 12px 14px; color: var(--text-main); font-size: 0.95rem;" />
+              <div style="position: relative; display: flex; align-items: center; background: var(--bg-card); border-right: 1px solid var(--border-color);">
+                <select id="phone-country-code" aria-label="Country code" style="border: none; background: var(--bg-card); color: var(--text-main); padding: 10px 28px 10px 10px; width: 120px; min-width: 120px; font-size: 0.76rem; text-align: center; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer;">
+                  ${phoneCountryOptions.map(option => `
+                    <option value="${option.value}" ${option.value === '+91' ? 'selected' : ''} style="color: var(--text-main); background: var(--bg-card);">${option.label}</option>
+                  `).join('')}
+                </select>
+                <span aria-hidden="true" style="position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--text-main); font-size: 0.7rem; pointer-events: none;">▲</span>
+              </div>
+              <input type="tel" id="phone-number-input" inputmode="numeric" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; min-width: 0; padding: 12px 14px; color: var(--text-main); font-size: 0.95rem;" />
             </div>
           </div>
 
@@ -370,6 +405,34 @@ export function bindLoginViewEvents(container) {
     tabRegister.addEventListener('click', () => setRegisterMode(true));
   }
 
+  function enforcePhoneValidation() {
+    if (!phoneInput || !countryCode) return true;
+
+    const maxDigits = getPhoneLengthLimit(countryCode.value);
+    const sanitizedValue = phoneInput.value.replace(/\D/g, '').slice(0, maxDigits);
+
+    if (phoneInput.value !== sanitizedValue) {
+      phoneInput.value = sanitizedValue;
+      showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${countryCode.value}.`, 'error');
+      return false;
+    }
+
+    phoneInput.maxLength = maxDigits;
+    return true;
+  }
+
+  if (countryCode && phoneInput) {
+    countryCode.addEventListener('change', () => {
+      phoneInput.maxLength = getPhoneLengthLimit(countryCode.value);
+      const digitsOnly = phoneInput.value.replace(/\D/g, '').slice(0, phoneInput.maxLength);
+      phoneInput.value = digitsOnly;
+    });
+
+    phoneInput.addEventListener('input', () => {
+      enforcePhoneValidation();
+    });
+  }
+
   if (phoneBtn && phonePanel) {
     phoneBtn.addEventListener('click', () => {
       phonePanel.style.display = phonePanel.style.display === 'none' ? 'block' : 'none';
@@ -387,6 +450,18 @@ export function bindLoginViewEvents(container) {
       if (!phoneNumber) {
         phoneInput.focus();
         showNotification('Please enter a mobile number first.', 'error');
+        return;
+      }
+
+      if (!enforcePhoneValidation()) {
+        phoneInput.focus();
+        return;
+      }
+
+      const maxDigits = getPhoneLengthLimit(countryCode.value);
+      if (phoneNumber.replace(/\D/g, '').length > maxDigits) {
+        showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${countryCode.value}.`, 'error');
+        phoneInput.focus();
         return;
       }
 
