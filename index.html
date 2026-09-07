@@ -17,6 +17,8 @@
 <body class="theme-light">
   <div id="app" class="app-container"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Block the legacy Leaflet map constructor before the application renders its map. -->
+  <script src="js/leaflet3dGuard.js?v=20260907-guard"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
