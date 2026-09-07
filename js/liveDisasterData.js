@@ -1,6 +1,6 @@
-/* ReliefLink - Live Disaster Data Overlay
+/* ReliefLink - Live Disaster Data
  * Optimized official USGS earthquakes + NASA EONET events.
- * Network refreshes never run while the map is being zoomed/panned.
+ * Uses Leaflet Canvas rendering to keep zoom/pan smooth with many live markers.
  */
 (function () {
   'use strict';
@@ -18,6 +18,7 @@
   let refreshQueued = false;
   let isInteracting = false;
   let requestInFlight = false;
+  let liveRenderer = null;
 
   const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -51,7 +52,7 @@
       isInteracting = false;
       if (refreshQueued) {
         refreshQueued = false;
-        window.setTimeout(() => refresh(map), 300);
+        window.setTimeout(() => refresh(map), 250);
       }
     });
   }
@@ -75,6 +76,7 @@
 
       const nextEarthquakes = window.L.layerGroup();
       const nextEonet = window.L.layerGroup();
+      if (!liveRenderer) liveRenderer = window.L.canvas({ padding: 0.5 });
 
       const earthquakes = Array.isArray(eqData.features) ? eqData.features.slice(0, MAX_EARTHQUAKES) : [];
       earthquakes.forEach((feature) => {
@@ -88,12 +90,14 @@
         const depth = feature.geometry.coordinates.length > 2 ? Number(feature.geometry.coordinates[2]) : null;
 
         window.L.circleMarker(coords, {
+          renderer: liveRenderer,
           radius: Math.max(4, Math.min(11, 4 + (Number.isFinite(mag) ? mag * 0.8 : 0))),
           color: sev.color,
           weight: 2,
           fillColor: sev.color,
           fillOpacity: 0.72,
           bubblingMouseEvents: false,
+          interactive: true,
           className: 'live-earthquake-beacon'
         }).bindPopup(`
           <div style="color:#111;font-family:sans-serif;max-width:250px;">
@@ -119,12 +123,14 @@
         const date = props.date ? new Date(props.date).toLocaleString() : 'Unknown date';
 
         window.L.circleMarker(coords, {
+          renderer: liveRenderer,
           radius: 5,
           color: '#A78BFA',
           weight: 2,
           fillColor: '#7C3AED',
           fillOpacity: 0.78,
           bubblingMouseEvents: false,
+          interactive: true,
           className: 'live-eonet-beacon'
         }).bindPopup(`
           <div style="color:#111;font-family:sans-serif;max-width:250px;">
@@ -169,6 +175,7 @@
     const map = window.__reliefLinkActiveMap;
     if (!map || !window.L || liveMap === map) return;
     liveMap = map;
+    liveRenderer = window.L.canvas({ padding: 0.5 });
     bindInteraction(map);
     refresh(map);
     if (refreshTimer) clearInterval(refreshTimer);
