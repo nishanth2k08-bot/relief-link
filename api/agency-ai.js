@@ -1,4 +1,4 @@
-const MODEL = process.env.RELIEFLINK_AI_MODEL || 'gpt-5.6-luna';
+const MODEL = process.env.RELIEFLINK_AI_MODEL || 'gpt-4.1-mini';
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -72,10 +72,7 @@ ${contextText}`;
       return;
     }
 
-    res.status(200).json({
-      text: data.output_text || '',
-      model: MODEL
-    });
+    res.status(200).json({ text: data.output_text || '', model: MODEL });
   } catch (error) {
     console.error('ReliefLink AI handler error:', error);
     res.status(500).json({ error: 'Unable to reach the AI coordinator.' });
