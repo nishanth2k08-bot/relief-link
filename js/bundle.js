@@ -649,7 +649,7 @@
 
             <div class="form-group" id="otp-input-group" style="display:none; margin-top:14px;">
               <label class="form-label">Enter OTP</label>
-              <input type="text" id="otp-code" inputmode="numeric" maxlength="6" placeholder="Enter OTP code" style="font-size:1.05rem; letter-spacing:6px; text-align:center; font-weight:700;" />
+              <input type="text" id="otp-code" inputmode="numeric" maxlength="4" placeholder="4-digit code" style="font-size:0.9rem; letter-spacing:4px; text-align:center;" />
               <button type="button" id="btn-verify-otp" class="btn btn-critical btn-lg" style="width: 100%; margin-top: 10px; font-size:0.92rem;">
                 <i class="fa-solid fa-shield-check"></i> Verify & Sign In
               </button>
@@ -1037,9 +1037,9 @@
           return;
         }
 
-        if (otp.length < 4) {
-          showAuthError('Invalid OTP code. Please enter the complete code.');
-          showToast('Invalid OTP. Code must be at least 4 digits.', 'error');
+        if (otp.length !== 4) {
+          showAuthError('Invalid OTP code. Please enter the 4-digit code.');
+          showToast('Invalid OTP. Please enter the 4-digit code.', 'error');
           if (otpInput) otpInput.focus();
           return;
         }
