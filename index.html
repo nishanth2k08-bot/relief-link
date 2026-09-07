@@ -5,52 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ReliefLink - Real-Time Disaster Coordination Platform for Emergency Responders">
   <title>ReliefLink | Emergency Response & Disaster Coordination</title>
-  
-  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet CSS retained for the existing map/data layer -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  
-  <!-- CesiumJS 3D Earth -->
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Cesium.js"></script>
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-  
-  <!-- FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="theme-light">
-  <div id="app" class="app-container">
-    <!-- Application content dynamically rendered -->
-  </div>
-
-  <!-- Leaflet JS retained for compatibility with the existing application -->
+  <div id="app" class="app-container"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  
-  <!-- Chart.js for Disaster Analytics & SitRep -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Firebase Official JS SDKs (v10 Compat) for Auth & Cloud Firestore -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-  <!-- MSG91 OTP Widget Provider -->
   <script src="https://verify.msg91.com/otp-provider.js"></script>
-
-  <!-- ReliefLink Standalone JavaScript Bundle -->
   <script src="js/bundle.js?v=20260907-otp-4digit"></script>
-
-  <!-- Existing Leaflet live-data bridge (kept for compatibility) -->
   <script src="js/liveDisasterMapBridge.js?v=20260907-live"></script>
   <script src="js/liveDisasterData.js?v=20260907-live"></script>
-
-  <!-- 3D Earth replaces the static Leaflet map visually -->
-  <script src="js/earth3d.js?v=20260907-3d-earth"></script>
+  <script src="js/earth3d-v2.js?v=20260907-3d-earth-v2"></script>
 </body>
 </html>
