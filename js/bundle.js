@@ -3,94 +3,30 @@
 (function () {
   'use strict';
 
-  // ==========================================
-  // 1. DATA: LIVE WORLDWIDE DISASTERS & SECTORS
-  // ==========================================
+  const MSG91_WIDGET_ID = '366962636477393838363135';
+  const MSG91_TOKEN_AUTH = '566450TQ3IUAWVp6a979537P1';
+  let msg91Initialized = false;
+  let msg91LastWidgetResponse = null;
+
+  function initMsg91Widget() {
+    if (msg91Initialized || typeof window.initSendOTP !== 'function') return;
+    window.initSendOTP({
+      widgetId: MSG91_WIDGET_ID,
+      tokenAuth: MSG91_TOKEN_AUTH,
+      exposeMethods: true,
+      success: (data) => { msg91LastWidgetResponse = { success: true, data }; },
+      failure: (error) => { msg91LastWidgetResponse = { success: false, error }; }
+    });
+    msg91Initialized = true;
+  }
+
   const globalDisastersList = [
-    {
-      id: 'disaster-world-1',
-      name: 'Cyclone Hector (Category 4)',
-      region: 'Caribbean & US East Coast',
-      type: 'cyclone',
-      icon: 'fa-hurricane',
-      severity: 'critical',
-      affectedCount: '2.4M Civilians',
-      coordinates: [25.7617, -80.1918],
-      windSpeed: '215 km/h Wind',
-      status: 'Active Landfall Warning',
-      evacuated: '68%',
-      color: '#EF4444'
-    },
-    {
-      id: 'disaster-world-2',
-      name: 'Pacific Ring Seismic Swarm (Mw 7.2)',
-      region: 'Japan & East Asia Fault Line',
-      type: 'earthquake',
-      icon: 'fa-house-crack',
-      severity: 'critical',
-      affectedCount: '1.8M Civilians',
-      coordinates: [35.6762, 139.6503],
-      windSpeed: 'Depth: 12km • Tsunami Active',
-      status: 'High Tsunami Risk',
-      evacuated: '82%',
-      color: '#EF4444'
-    },
-    {
-      id: 'disaster-world-3',
-      name: 'Monsoon Basin Inundation',
-      region: 'South Asia / Ganges River Delta',
-      type: 'flood',
-      icon: 'fa-water',
-      severity: 'high',
-      affectedCount: '4.5M Civilians',
-      coordinates: [23.8103, 90.4125],
-      windSpeed: 'Water Level +4.2m',
-      status: 'Mass Evacuation Operations',
-      evacuated: '54%',
-      color: '#F59E0B'
-    },
-    {
-      id: 'disaster-world-4',
-      name: 'Mediterranean Wildfire Complex',
-      region: 'Southern Europe / Greece',
-      type: 'wildfire',
-      icon: 'fa-fire-flame-curved',
-      severity: 'high',
-      affectedCount: '340K Civilians',
-      coordinates: [37.9838, 23.7275],
-      windSpeed: 'High Thermal Propagation',
-      status: 'Uncontained Perimeter',
-      evacuated: '91%',
-      color: '#F59E0B'
-    },
-    {
-      id: 'disaster-world-5',
-      name: 'Mount Semeru Volcanic Eruption',
-      region: 'Java, Indonesia',
-      type: 'volcano',
-      icon: 'fa-volcano',
-      severity: 'critical',
-      affectedCount: '620K Civilians',
-      coordinates: [-8.1080, 112.9220],
-      windSpeed: 'Ash Plume Height 15km',
-      status: 'Red Aviation Warning',
-      evacuated: '76%',
-      color: '#EF4444'
-    },
-    {
-      id: 'disaster-world-6',
-      name: 'Alpine Glacial Outburst Flood',
-      region: 'Swiss Alps, Europe',
-      type: 'flood',
-      icon: 'fa-hill-rockslide',
-      severity: 'medium',
-      affectedCount: '85K Civilians',
-      coordinates: [46.8182, 8.2275],
-      windSpeed: 'Glacial Dam Breach',
-      status: 'Controlled Evac Route',
-      evacuated: '95%',
-      color: '#EAB308'
-    }
+    { id: 'disaster-world-1', name: 'Cyclone Hector (Category 4)', region: 'Caribbean & US East Coast', type: 'cyclone', icon: 'fa-hurricane', severity: 'critical', affectedCount: '2.4M Civilians', coordinates: [25.7617, -80.1918], windSpeed: '215 km/h Wind', status: 'Active Landfall Warning', evacuated: '68%', color: '#EF4444' },
+    { id: 'disaster-world-2', name: 'Pacific Ring Seismic Swarm (Mw 7.2)', region: 'Japan & East Asia Fault Line', type: 'earthquake', icon: 'fa-house-crack', severity: 'critical', affectedCount: '1.8M Civilians', coordinates: [35.6762, 139.6503], windSpeed: 'Depth: 12km \u2022 Tsunami Active', status: 'High Tsunami Risk', evacuated: '82%', color: '#EF4444' },
+    { id: 'disaster-world-3', name: 'Monsoon Basin Inundation', region: 'South Asia / Ganges River Delta', type: 'flood', icon: 'fa-water', severity: 'high', affectedCount: '4.5M Civilians', coordinates: [23.8103, 90.4125], windSpeed: 'Water Level +4.2m', status: 'Mass Evacuation Operations', evacuated: '54%', color: '#F59E0B' },
+    { id: 'disaster-world-4', name: 'Mediterranean Wildfire Complex', region: 'Southern Europe / Greece', type: 'wildfire', icon: 'fa-fire-flame-curved', severity: 'high', affectedCount: '340K Civilians', coordinates: [37.9838, 23.7275], windSpeed: 'High Thermal Propagation', status: 'Uncontained Perimeter', evacuated: '91%', color: '#F59E0B' },
+    { id: 'disaster-world-5', name: 'Mount Semeru Volcanic Eruption', region: 'Java, Indonesia', type: 'volcano', icon: 'fa-volcano', severity: 'critical', affectedCount: '620K Civilians', coordinates: [-8.1080, 112.9220], windSpeed: 'Ash Plume Height 15km', status: 'Red Aviation Warning', evacuated: '76%', color: '#EF4444' },
+    { id: 'disaster-world-6', name: 'Alpine Glacial Outburst Flood', region: 'Swiss Alps, Europe', type: 'flood', icon: 'fa-hill-rockslide', severity: 'medium', affectedCount: '85K Civilians', coordinates: [46.8182, 8.2275], windSpeed: 'Glacial Dam Breach', status: 'Controlled Evac Route', evacuated: '95%', color: '#EAB308' }
   ];
 
   const initialDisasterZones = [
@@ -112,7 +48,7 @@
   ];
 
   const initialTeams = [
-    { id: 'team-1', name: 'Squad Alpha — Search & Rescue', agency: 'National Urban SAR', lead: 'Capt. Marcus Thorne', membersCount: 12, specialty: 'Heavy Extraction & Scuba', status: 'deployed', currentLocation: 'Causeway Km 4.2', fatigueHours: 6.5, contactRadio: 'CH-4 (142.85 MHz)' },
+    { id: 'team-1', name: 'Squad Alpha \u2014 Search & Rescue', agency: 'National Urban SAR', lead: 'Capt. Marcus Thorne', membersCount: 12, specialty: 'Heavy Extraction & Scuba', status: 'deployed', currentLocation: 'Causeway Km 4.2', fatigueHours: 6.5, contactRadio: 'CH-4 (142.85 MHz)' },
     { id: 'team-2', name: 'Medical Evac Unit 3', agency: 'Red Cross International', lead: 'Dr. Sarah Lin', membersCount: 8, specialty: 'Trauma & Triage Care', status: 'deployed', currentLocation: 'St. Jude Hospital', fatigueHours: 8.0, contactRadio: 'CH-2 (155.40 MHz)' }
   ];
 
@@ -136,9 +72,6 @@
     en: { appTitle: "ReliefLink", dashboard: "Command Overview", liveMap: "Global Disaster Map", resources: "Resource Allocation", reportIncident: "Report Incident", commsFeed: "Multi-Agency Comms", teamTracker: "Team Deployment", priorityQueue: "Priority Task Queue", sitRep: "SitRep Generator", settings: "Settings & Access", offlineMode: "OFFLINE - Sync Queued", onlineMode: "ONLINE - Synced" }
   };
 
-  // ==========================================
-  // 2. STATE STORE & FIREBASE ENGINE
-  // ==========================================
   class StateStore {
     constructor() {
       this.listeners = [];
@@ -193,7 +126,6 @@
           this.firebaseDb = window.firebase.firestore();
           this.firebaseAuth = window.firebase.auth();
 
-          // Listen to Firebase Auth changes
           this.firebaseAuth.onAuthStateChanged((user) => {
             if (user) {
               this.isAuthenticated = true;
@@ -361,7 +293,6 @@
       this.notify();
     }
 
-    // Firebase Email/Password Sign In
     async signInWithEmail(email, password) {
       if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
       try {
@@ -387,7 +318,6 @@
       }
     }
 
-    // Firebase Email/Password Registration
     async registerWithEmail(email, password) {
       if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
       try {
@@ -413,7 +343,6 @@
       }
     }
 
-    // Google Sign-In
     async signInWithGoogle() {
       if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
       try {
@@ -441,7 +370,6 @@
       }
     }
 
-    // Apple Sign-In
     async signInWithApple() {
       if (!this.firebaseAuth) return { success: false, error: 'Firebase not initialized. Go to Settings and enter your Firebase config first.' };
       try {
@@ -470,11 +398,9 @@
       }
     }
 
-    // Update Firebase Config from Settings page
     updateFirebaseConfig(newConfig) {
       this.firebaseConfig = { ...this.firebaseConfig, ...newConfig };
       this.saveState();
-      // Re-init Firebase with new config
       try {
         if (window.firebase && window.firebase.apps.length) {
           window.firebase.app().delete().then(() => {
@@ -517,9 +443,23 @@
 
   const store = new StateStore();
 
-  // ==========================================
-  // 3. UI VIEWS & LOGIN AUTH SCREEN
-  // ==========================================
+  // Delegated, one-time listener: works immediately on freshly re-rendered
+  // buttons without needing bindEvents to re-run first (fixes "must refresh"
+  // issue for theme toggle and sign out).
+  document.addEventListener('click', (e) => {
+    const themeTarget = e.target.closest('#btn-toggle-theme');
+    if (themeTarget) {
+      store.toggleTheme();
+      showToast(`Appearance switched to ${store.theme === 'light' ? 'Light' : 'Dark'} mode.`);
+      return;
+    }
+    const signOutTarget = e.target.closest('#btn-sign-out');
+    if (signOutTarget) {
+      store.signOut();
+      showToast('Signed out successfully.');
+    }
+  });
+
   let activeMapInstance = null;
 
   function renderNavbar() {
@@ -596,7 +536,7 @@
     return `
       <div class="alert-ticker-bar">
         <div class="ticker-label"><i class="fa-solid fa-globe"></i> <span>LIVE GLOBAL THREAT RADAR</span></div>
-        <div class="ticker-content"><div class="ticker-text">${store.alerts.join('  •  ')}</div></div>
+        <div class="ticker-content"><div class="ticker-text">${store.alerts.join('  \u2022  ')}</div></div>
       </div>
     `;
   }
@@ -605,7 +545,6 @@
     return `<button id="fab-sos-button" class="fab-sos"><i class="fa-solid fa-truck-medical"></i></button>`;
   }
 
-  // LOGIN & AUTH SCREEN
   function renderLoginView() {
     return `
       <div class="view-container" style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(239,68,68,0.08) 0%, transparent 50%), radial-gradient(circle at center, var(--bg-header) 0%, var(--bg-app) 100%);">
@@ -617,20 +556,8 @@
         </button>
 
           <div style="text-align: center; margin-bottom: 28px;">
-            <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; padding: 0; background: transparent; box-shadow: none; border: none; display: flex; align-items: center; justify-content: center;">
-              <svg viewBox="0 0 64 64" width="100%" height="100%" aria-label="ReliefLink logo" style="display:block; filter: drop-shadow(0 14px 26px rgba(59,130,246,0.38));">
-                <defs>
-                  <linearGradient id="relief-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
-                    <stop offset="0%" stop-color="#FF8A5B"/>
-                    <stop offset="38%" stop-color="#F59E0B"/>
-                    <stop offset="100%" stop-color="#3B82F6"/>
-                  </linearGradient>
-                </defs>
-                <path d="M32 4.5L51 11.5V29.8C51 42.2 43.2 51.8 32 58.8C20.8 51.8 13 42.2 13 29.8V11.5L32 4.5Z" fill="url(#relief-gradient)" stroke="rgba(255,255,255,0.7)" stroke-width="1.6"/>
-                <path d="M32 17.6v28.8M17.6 32h28.8" stroke="white" stroke-width="5.6" stroke-linecap="round"/>
-                <path d="M24.5 24.8L32 19.2L39.5 24.8V29.8L32 35.4L24.5 29.8V24.8Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.38)" stroke-width="1.2"/>
-                <path d="M22 44.5L32 51L42 44.5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+            <div class="brand-logo" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 16px auto; background: linear-gradient(135deg, var(--color-primary), #EF4444); box-shadow: 0 8px 32px rgba(59,130,246,0.3);">
+              <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">ReliefLink</h2>
             <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 6px;">
@@ -639,10 +566,6 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
-              <span style="font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Sign in</span>
-              <button id="btn-show-create-account" type="button" style="display:flex; align-items:center; justify-content:center; gap:6px; border-radius:999px; padding:8px 12px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">Create account</button>
-            </div>
             <button id="btn-google-signin" style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">
               <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               Continue with Google
@@ -652,189 +575,26 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
               Continue with Apple
             </button>
-
-            <button id="btn-phone-signin" type="button" style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; font-family:inherit;">
-              <i class="fa-solid fa-mobile-screen-button"></i>
-              Sign in with Phone Number
-            </button>
           </div>
 
-          <div id="create-account-panel" style="display:none; margin-bottom:20px; padding:18px; border:1px solid rgba(255,255,255,0.08); border-radius:16px; background:rgba(59,130,246,0.06);">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;">
-              <h3 style="font-size:1.05rem; margin:0;">Create account</h3>
-              <button id="btn-back-to-login" type="button" style="display:flex; align-items:center; justify-content:center; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text-main); font-size:0.72rem; font-weight:700; cursor:pointer; font-family:inherit;">Back</button>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-              <label class="form-label">Full Name</label>
-              <input type="text" id="create-account-name" placeholder="Your full name" />
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-              <label class="form-label">Email Address</label>
-              <input type="email" id="create-account-email" placeholder="name@agency.org" />
-            </div>
-            <div class="form-group" style="margin-bottom:14px;">
-              <label class="form-label">Password</label>
-              <input type="password" id="create-account-password" placeholder="Create a password" />
-            </div>
-            <button id="btn-submit-create-account" type="button" style="display:flex; align-items:center; justify-content:center; width:100%; padding:12px 16px; border-radius:10px; background:linear-gradient(135deg, var(--color-primary), #2563eb); color:white; font-size:0.9rem; font-weight:700; cursor:pointer; font-family:inherit;">Create Account</button>
-          </div>
-
-          <div id="phone-auth-panel" style="display:none; margin-bottom:20px;">
-            <div class="form-group">
-              <label class="form-label">Mobile Number</label>
-              <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:var(--bg-app); align-items:stretch;">
-                <div style="position:relative; display:flex; align-items:center; background:var(--bg-card); border-right:1px solid var(--border-color);">
-                  <select id="phone-country-code" aria-label="Country code" style="border:none; background:var(--bg-card); color:var(--text-main); padding:10px 28px 10px 10px; width:120px; min-width:120px; font-size:0.76rem; text-align:center; appearance:none; -webkit-appearance:none; -moz-appearance:none; cursor:pointer;">
-                    <option value="+1" style="color:var(--text-main); background:var(--bg-card);">🇺🇸 +1</option>
-                    <option value="+7" style="color:var(--text-main); background:var(--bg-card);">🇷🇺 +7</option>
-                  <option value="+20">🇪🇬 +20</option>
-                  <option value="+27">🇿🇦 +27</option>
-                  <option value="+30">🇬🇷 +30</option>
-                  <option value="+31">🇳🇱 +31</option>
-                  <option value="+32">🇧🇪 +32</option>
-                  <option value="+33">🇫🇷 +33</option>
-                  <option value="+34">🇪🇸 +34</option>
-                  <option value="+36">🇭🇺 +36</option>
-                  <option value="+39">🇮🇹 +39</option>
-                  <option value="+41">🇨🇭 +41</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+45">🇩🇰 +45</option>
-                  <option value="+46">🇸🇪 +46</option>
-                  <option value="+47">🇳🇴 +47</option>
-                  <option value="+48">🇵🇱 +48</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+51">🇵🇪 +51</option>
-                  <option value="+52">🇲🇽 +52</option>
-                  <option value="+54">🇦🇷 +54</option>
-                  <option value="+55">🇧🇷 +55</option>
-                  <option value="+56">🇨🇱 +56</option>
-                  <option value="+57">🇨🇴 +57</option>
-                  <option value="+60">🇲🇾 +60</option>
-                  <option value="+61">🇦🇺 +61</option>
-                  <option value="+62">🇮🇩 +62</option>
-                  <option value="+63">🇵🇭 +63</option>
-                  <option value="+64">🇳🇿 +64</option>
-                  <option value="+65">🇸🇬 +65</option>
-                  <option value="+66">🇹🇭 +66</option>
-                  <option value="+81">🇯🇵 +81</option>
-                  <option value="+82">🇰🇷 +82</option>
-                  <option value="+84">🇻🇳 +84</option>
-                  <option value="+86">🇨🇳 +86</option>
-                  <option value="+90">🇹🇷 +90</option>
-                  <option value="+91" selected>🇮🇳 +91</option>
-                  <option value="+92">🇵🇰 +92</option>
-                  <option value="+94">🇱🇰 +94</option>
-                  <option value="+98">🇮🇷 +98</option>
-                  <option value="+212">🇲🇦 +212</option>
-                  <option value="+213">🇩🇿 +213</option>
-                  <option value="+216">🇹🇳 +216</option>
-                  <option value="+220">🇬🇲 +220</option>
-                  <option value="+221">🇸🇳 +221</option>
-                  <option value="+234">🇳🇬 +234</option>
-                  <option value="+254">🇰🇪 +254</option>
-                  <option value="+255">🇹🇿 +255</option>
-                  <option value="+256">🇺🇬 +256</option>
-                  <option value="+263">🇿🇼 +263</option>
-                  <option value="+352">🇱🇺 +352</option>
-                  <option value="+353">🇮🇪 +353</option>
-                  <option value="+355">🇦🇱 +355</option>
-                  <option value="+358">🇫🇮 +358</option>
-                  <option value="+370">🇱🇹 +370</option>
-                  <option value="+371">🇱🇻 +371</option>
-                  <option value="+372">🇪🇪 +372</option>
-                  <option value="+375">🇧🇾 +375</option>
-                  <option value="+380">🇺🇦 +380</option>
-                  <option value="+385">🇭🇷 +385</option>
-                  <option value="+420">🇨🇿 +420</option>
-                  <option value="+421">🇸🇰 +421</option>
-                  <option value="+500">🇫🇰 +500</option>
-                  <option value="+501">🇧🇿 +501</option>
-                  <option value="+502">🇬🇹 +502</option>
-                  <option value="+503">🇸🇻 +503</option>
-                  <option value="+504">🇭🇳 +504</option>
-                  <option value="+507">🇵🇦 +507</option>
-                  <option value="+509">🇭🇹 +509</option>
-                  <option value="+591">🇧🇴 +591</option>
-                  <option value="+592">🇬🇾 +592</option>
-                  <option value="+593">🇪🇨 +593</option>
-                  <option value="+595">🇵🇾 +595</option>
-                  <option value="+597">🇸🇷 +597</option>
-                  <option value="+598">🇺🇾 +598</option>
-                  <option value="+599">🇨🇼 +599</option>
-                  <option value="+673">🇧🇳 +673</option>
-                  <option value="+674">🇳🇷 +674</option>
-                  <option value="+675">🇵🇬 +675</option>
-                  <option value="+676">🇹🇴 +676</option>
-                  <option value="+677">🇸🇧 +677</option>
-                  <option value="+678">🇻🇺 +678</option>
-                  <option value="+679">🇫🇯 +679</option>
-                  <option value="+680">🇵🇼 +680</option>
-                  <option value="+682">🇨🇰 +682</option>
-                  <option value="+852">🇭🇰 +852</option>
-                  <option value="+853">🇲🇴 +853</option>
-                  <option value="+855">🇰🇭 +855</option>
-                  <option value="+856">🇱🇦 +856</option>
-                  <option value="+880">🇧🇩 +880</option>
-                  <option value="+886">🇹🇼 +886</option>
-                  <option value="+960">🇲🇻 +960</option>
-                  <option value="+961">🇱🇧 +961</option>
-                  <option value="+962">🇯🇴 +962</option>
-                  <option value="+963">🇸🇾 +963</option>
-                  <option value="+964">🇮🇶 +964</option>
-                  <option value="+965">🇰🇼 +965</option>
-                  <option value="+966">🇸🇦 +966</option>
-                  <option value="+967">🇾🇪 +967</option>
-                  <option value="+968">🇴🇲 +968</option>
-                  <option value="+971">🇦🇪 +971</option>
-                  <option value="+972">🇮🇱 +972</option>
-                  <option value="+974">🇶🇦 +974</option>
-                  <option value="+975">🇧🇹 +975</option>
-                  <option value="+976">🇲🇳 +976</option>
-                  <option value="+977">🇳🇵 +977</option>
-                  <option value="+992">🇹🇯 +992</option>
-                  <option value="+993">🇹🇲 +993</option>
-                  <option value="+994">🇦🇿 +994</option>
-                  <option value="+995">🇬🇪 +995</option>
-                  <option value="+996">🇰🇬 +996</option>
-                  <option value="+998">🇺🇿 +998</option>
-                </select>
-                <input type="tel" id="phone-number-input" placeholder="98765 43210" style="border:none; background:transparent; flex:1; min-width:0; padding:12px 14px; color:var(--text-main); font-size:0.95rem;" />
-              </div>
-            </div>
-
-            <div id="otp-section" style="display:none; margin-top:12px;">
-              <div class="form-group">
-                <label class="form-label">Enter OTP</label>
-                <input type="text" id="otp-input" maxlength="6" placeholder="6-digit code" style="letter-spacing:0.2em; text-align:center;" />
-              </div>
-            </div>
-
-            <div style="display:flex; gap:8px; margin-top:12px;">
-              <button type="button" id="btn-send-otp" class="btn btn-primary btn-sm" style="flex:1;">Send OTP</button>
-              <button type="button" id="btn-verify-otp" class="btn btn-secondary btn-sm" style="flex:1; display:none;">Verify OTP</button>
-            </div>
-          </div>
-
-          <!-- Divider -->
           <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0;">
             <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
-            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with agency credentials</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">or sign in with email</span>
             <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
           </div>
 
-          <div id="auth-tabs" style="display: flex; gap: 6px; background: var(--bg-app); padding: 6px; border-radius: var(--radius-md); margin-bottom: 18px;">
-            <button type="button" id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.8rem;">Sign In</button>
-            <button type="button" id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.8rem;">Create Account</button>
+          <div style="display: flex; gap: 4px; background: var(--bg-app); padding: 4px; border-radius: var(--radius-md); margin-bottom: 18px;">
+            <button type="button" id="tab-btn-login" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.78rem;">Sign In</button>
+            <button type="button" id="tab-btn-register" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem;">Create Account</button>
+            <button type="button" id="tab-btn-phone" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem;"><i class="fa-solid fa-mobile-screen"></i> Phone</button>
           </div>
 
-          <!-- Error Message -->
           <div id="auth-error-msg" style="display:none; padding:10px 14px; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); color:#f87171; font-size:0.82rem; margin-bottom:14px; text-align:center; font-weight:500;">
           </div>
 
-          <!-- Sign In Form -->
-          <form id="auth-sign-in-form" data-auth-method="email">
+          <form id="auth-sign-in-form">
             <div class="form-group">
-              <label id="auth-identifier-label" class="form-label">Email Address</label>
+              <label class="form-label">Email Address</label>
               <input type="email" id="auth-email" placeholder="you@example.com" required style="font-size:0.9rem;" />
             </div>
 
@@ -855,7 +615,6 @@
               </select>
             </div>
 
-            <!-- Loading Spinner (hidden by default) -->
             <div id="auth-loading" style="display:none; text-align:center; padding:12px;">
               <i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem; color:var(--color-primary);"></i>
               <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">Authenticating...</p>
@@ -866,26 +625,45 @@
             </button>
           </form>
 
-          <!-- Quick Demo Access -->
-          <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 16px; text-align: center;">
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">
-              Quick Demo Access
-            </p>
-            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-              ${agencyUsers.map(usr => `
-                <button class="btn btn-secondary btn-sm demo-sign-in-btn" data-user-id="${usr.id}" style="font-size:0.75rem; padding: 6px 10px;">
-                  ${usr.name.split(' ')[0]} (${usr.role})
-                </button>
-              `).join('')}
+          <form id="auth-phone-form" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <input type="tel" id="phone-number" placeholder="+91 98765 43210" required style="font-size:0.9rem;" />
             </div>
-          </div>
+
+            <div class="form-group" id="phone-agency-group">
+              <label class="form-label">Responding Agency Unit</label>
+              <select id="phone-agency" style="font-size:0.9rem;">
+                <option value="FEMA Regional Command">FEMA Regional Command</option>
+                <option value="Red Cross International">Red Cross International</option>
+                <option value="National Guard SAR">National Guard Search & Rescue</option>
+                <option value="UNICEF Field Operations">UNICEF Field Operations</option>
+                <option value="Local Government">Local Government Agency</option>
+                <option value="Independent NGO">Independent NGO / Volunteer</option>
+              </select>
+            </div>
+
+            <button type="button" id="btn-send-otp" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 6px; font-size:0.92rem;">
+              <i class="fa-solid fa-paper-plane"></i> Send OTP
+            </button>
+
+            <div class="form-group" id="otp-input-group" style="display:none; margin-top:14px;">
+              <label class="form-label">Enter OTP</label>
+              <input type="text" id="otp-code" inputmode="numeric" maxlength="6" placeholder="Enter OTP code" style="font-size:1.05rem; letter-spacing:6px; text-align:center; font-weight:700;" />
+              <button type="button" id="btn-verify-otp" class="btn btn-critical btn-lg" style="width: 100%; margin-top: 10px; font-size:0.92rem;">
+                <i class="fa-solid fa-shield-check"></i> Verify & Sign In
+              </button>
+              <button type="button" id="btn-resend-otp" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 8px; font-size:0.78rem;">
+                Resend OTP
+              </button>
+            </div>
+          </form>
 
         </div>
       </div>
     `;
   }
 
-  // GLOBAL DISASTER MAP & TRACKING
   function renderMapView() {
     return `
       <div class="view-container" style="height: 100%;">
@@ -914,13 +692,13 @@
                 </label>
                 <label>
                   <input type="checkbox" id="layer-weather-alerts" checked />
-                  <span>NOAA weather alerts <em id="weather-alert-count">Loading…</em></span>
+                  <span>NOAA weather alerts <em id="weather-alert-count">Loading\u2026</em></span>
                 </label>
                 <label>
                   <input type="checkbox" id="layer-wildfires" checked />
-                  <span>NASA active wildfires <em id="wildfire-count">Loading…</em></span>
+                  <span>NASA active wildfires <em id="wildfire-count">Loading\u2026</em></span>
                 </label>
-                <small id="live-data-status" aria-live="polite">Connecting to public disaster feeds…</small>
+                <small id="live-data-status" aria-live="polite">Connecting to public disaster feeds\u2026</small>
               </div>
               
               <div class="map-legend-floating">
@@ -932,7 +710,6 @@
               </div>
             </div>
 
-            <!-- Global Disasters List & Inspector -->
             <div class="card" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
               <div class="card-header">
                 <h3 class="card-title">
@@ -951,7 +728,7 @@
                     <div style="font-size: 0.78rem; color: var(--text-muted);">
                       <div>Region: <strong style="color: var(--text-main);">${dis.region}</strong></div>
                       <div>Impact: <strong style="color: var(--color-primary);">${dis.affectedCount}</strong></div>
-                      <div>Metrics: <strong>${dis.windSpeed}</strong> • Status: <strong>${dis.status}</strong></div>
+                      <div>Metrics: <strong>${dis.windSpeed}</strong> \u2022 Status: <strong>${dis.status}</strong></div>
                     </div>
                     <button class="btn btn-primary btn-sm btn-fly-world-disaster" data-lat="${dis.coordinates[0]}" data-lng="${dis.coordinates[1]}" style="width: 100%; margin-top: 8px;">
                       <i class="fa-solid fa-crosshairs"></i> Track Live on Radar
@@ -1099,7 +876,7 @@
         <div class="view-header"><h1><i class="fa-solid fa-users-gear"></i> Squad & Volunteer Tracker</h1></div>
         <div class="view-body">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-            ${store.teams.map(t => `<div class="card"><h3>${t.name}</h3><p>${t.agency} • ${t.currentLocation}</p></div>`).join('')}
+            ${store.teams.map(t => `<div class="card"><h3>${t.name}</h3><p>${t.agency} \u2022 ${t.currentLocation}</p></div>`).join('')}
           </div>
         </div>
       </div>
@@ -1118,7 +895,7 @@
                 ${store.incidents.filter(i => i.status === col).map(inc => `
                   <div class="task-card">
                     <strong>${inc.title}</strong>
-                    <button class="btn btn-secondary btn-sm btn-move-task" data-inc-id="${inc.id}" data-target="resolved" style="width:100%; margin-top:6px;">Resolve ✓</button>
+                    <button class="btn btn-secondary btn-sm btn-move-task" data-inc-id="${inc.id}" data-target="resolved" style="width:100%; margin-top:6px;">Resolve \u2713</button>
                   </div>
                 `).join('')}
               </div>
@@ -1143,40 +920,19 @@
     `;
   }
 
-  // EVENT BINDINGS
   function showToast(message, type = 'success') {
     let toastContainer = document.querySelector('.toast-container');
     if (!toastContainer) { toastContainer = document.createElement('div'); toastContainer.className = 'toast-container'; document.body.appendChild(toastContainer); }
     const toast = document.createElement('div');
     toast.className = `toast-notification ${type}`;
-    toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i><span></span>`;
+    const iconClass = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info');
+    toast.innerHTML = `<i class="fa-solid ${iconClass}"></i><span></span>`;
     toast.querySelector('span').textContent = message;
     toastContainer.appendChild(toast);
     setTimeout(() => { toast.remove(); if (!toastContainer.children.length) toastContainer.remove(); }, 4500);
   }
-  function bindEvents(container) {
-    function showNotification(message, type = 'success') {
-      const existing = container.querySelector('.login-notification');
-      if (existing) existing.remove();
-      const notice = document.createElement('div');
-      notice.className = 'login-notification';
-      notice.textContent = message;
-      notice.style.position = 'fixed';
-      notice.style.bottom = '20px';
-      notice.style.right = '20px';
-      notice.style.zIndex = '9999';
-      notice.style.padding = '12px 16px';
-      notice.style.borderRadius = '10px';
-      notice.style.fontSize = '0.8rem';
-      notice.style.fontWeight = '700';
-      notice.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)';
-      notice.style.color = '#fff';
-      notice.style.background = type === 'error' ? '#ef4444' : '#10b981';
-      document.body.appendChild(notice);
-      setTimeout(() => notice.remove(), 3500);
-    }
 
-    // Helper to show auth error
+  function bindEvents(container) {
     function showAuthError(msg) {
       const errEl = container.querySelector('#auth-error-msg');
       if (errEl) {
@@ -1186,7 +942,6 @@
       }
     }
 
-    // Helper to show/hide loading
     function setAuthLoading(loading) {
       const loadEl = container.querySelector('#auth-loading');
       const btnEl = container.querySelector('#btn-email-signin');
@@ -1194,231 +949,174 @@
       if (btnEl) btnEl.style.display = loading ? 'none' : 'block';
     }
 
-    // Tab switching (Sign In / Create Account)
     let isRegisterMode = false;
-    let generatedOtp = '';
     const tabLogin = container.querySelector('#tab-btn-login');
     const tabRegister = container.querySelector('#tab-btn-register');
+    const tabPhone = container.querySelector('#tab-btn-phone');
     const btnSubmit = container.querySelector('#btn-email-signin');
-    const phoneBtn = container.querySelector('#btn-phone-signin');
-    const createAccountPanel = container.querySelector('#create-account-panel');
-    const btnShowCreateAccount = container.querySelector('#btn-show-create-account');
-    const btnBackToLogin = container.querySelector('#btn-back-to-login');
-    const btnSubmitCreateAccount = container.querySelector('#btn-submit-create-account');
-    const createAccountName = container.querySelector('#create-account-name');
-    const createAccountEmail = container.querySelector('#create-account-email');
-    const createAccountPassword = container.querySelector('#create-account-password');
-    const phonePanel = container.querySelector('#phone-auth-panel');
-    const phoneCountryCode = container.querySelector('#phone-country-code');
-    const phoneNumberInput = container.querySelector('#phone-number-input');
-    const otpSection = container.querySelector('#otp-section');
-    const otpInput = container.querySelector('#otp-input');
-    const sendOtpBtn = container.querySelector('#btn-send-otp');
-    const verifyOtpBtn = container.querySelector('#btn-verify-otp');
+    const emailForm = container.querySelector('#auth-sign-in-form');
+    const phoneForm = container.querySelector('#auth-phone-form');
 
-    if (tabLogin) {
-      tabLogin.onclick = () => {
-        isRegisterMode = false;
-        tabLogin.className = 'btn btn-primary btn-sm';
-        tabRegister.className = 'btn btn-secondary btn-sm';
-        tabLogin.style.flex = '1';
-        tabRegister.style.flex = '1';
-        if (btnSubmit) {
-          btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+    function setActiveTab(active) {
+      [tabLogin, tabRegister, tabPhone].forEach(btn => { if (btn) btn.className = 'btn btn-secondary btn-sm'; });
+      if (active) active.className = 'btn btn-primary btn-sm';
+    }
+
+    if (tabLogin) tabLogin.onclick = () => { isRegisterMode = false; setActiveTab(tabLogin); if (emailForm) emailForm.style.display = ''; if (phoneForm) phoneForm.style.display = 'none'; if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In'; };
+    if (tabRegister) tabRegister.onclick = () => { isRegisterMode = true; setActiveTab(tabRegister); if (emailForm) emailForm.style.display = ''; if (phoneForm) phoneForm.style.display = 'none'; if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account'; };
+    if (tabPhone) tabPhone.onclick = () => { setActiveTab(tabPhone); if (emailForm) emailForm.style.display = 'none'; if (phoneForm) phoneForm.style.display = ''; initMsg91Widget(); };
+
+    const btnSendOtp = container.querySelector('#btn-send-otp');
+    const btnVerifyOtp = container.querySelector('#btn-verify-otp');
+    const btnResendOtp = container.querySelector('#btn-resend-otp');
+    const otpInputGroup = container.querySelector('#otp-input-group');
+
+    if (btnSendOtp) {
+      btnSendOtp.onclick = () => {
+        const phoneInput = container.querySelector('#phone-number');
+        const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+        let phoneDigits = rawPhone.replace(/[^0-9]/g, '');
+        if (phoneDigits.length === 10) phoneDigits = '91' + phoneDigits;
+        if (!phoneDigits || phoneDigits.length < 10) {
+          showAuthError('Enter a valid mobile number with country code, e.g. +91 98765 43210.');
+          showToast('Please enter a valid mobile number with country code.', 'error');
+          return;
         }
-      };
-    }
-    if (tabRegister) {
-      tabRegister.onclick = () => {
-        isRegisterMode = true;
-        tabRegister.className = 'btn btn-primary btn-sm';
-        tabLogin.className = 'btn btn-secondary btn-sm';
-        tabRegister.style.flex = '1';
-        tabLogin.style.flex = '1';
-        if (btnSubmit) {
-          btnSubmit.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+        if (typeof window.sendOtp !== 'function') {
+          showAuthError('OTP widget is still loading. Wait a second and try again.');
+          showToast('OTP widget is still loading. Wait a second and try again.', 'info');
+          initMsg91Widget();
+          return;
         }
+        btnSendOtp.disabled = true;
+        const original = btnSendOtp.innerHTML;
+        btnSendOtp.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP...';
+        window.sendOtp(
+          phoneDigits,
+          () => {
+            btnSendOtp.disabled = false;
+            btnSendOtp.innerHTML = original;
+            if (otpInputGroup) otpInputGroup.style.display = '';
+            showToast('OTP sent to ' + rawPhone, 'success');
+            const otpCode = container.querySelector('#otp-code');
+            if (otpCode) {
+              otpCode.value = '';
+              otpCode.focus();
+            }
+          },
+          (err) => {
+            btnSendOtp.disabled = false;
+            btnSendOtp.innerHTML = original;
+            const errDetail = (err && (err.message || err.description)) || (typeof err === 'string' ? err : 'Unable to send OTP.');
+            showAuthError('Could not send OTP: ' + errDetail);
+            showToast('Could not send OTP: ' + errDetail, 'error');
+          }
+        );
       };
     }
 
-    function getPhoneLengthLimit(countryCodeValue) {
-      const limits = {
-        '+1': 10, '+7': 10, '+20': 9, '+27': 9, '+30': 10, '+31': 10, '+32': 9, '+33': 9,
-        '+34': 9, '+36': 9, '+39': 10, '+40': 9, '+41': 9, '+43': 10, '+44': 10, '+45': 8,
-        '+46': 10, '+47': 8, '+48': 9, '+49': 11, '+51': 9, '+52': 10, '+53': 8, '+54': 10,
-        '+55': 11, '+56': 9, '+57': 10, '+58': 10, '+60': 9, '+61': 9, '+62': 11, '+63': 10,
-        '+64': 9, '+65': 8, '+66': 9, '+81': 10, '+82': 10, '+84': 9, '+86': 11, '+90': 10,
-        '+91': 10, '+92': 10, '+93': 9, '+94': 9, '+95': 9, '+98': 10, '+211': 9, '+212': 9,
-        '+213': 9, '+216': 8, '+218': 9, '+220': 7, '+221': 9, '+222': 9, '+223': 9, '+224': 9,
-        '+225': 10, '+226': 8, '+227': 8, '+228': 8, '+229': 8, '+230': 8, '+231': 7, '+232': 8,
-        '+233': 9, '+234': 10, '+235': 8, '+236': 8, '+237': 9, '+238': 7, '+239': 7, '+240': 9,
-        '+241': 9, '+242': 9, '+243': 10, '+244': 9, '+245': 7, '+248': 7, '+249': 9, '+250': 9,
-        '+251': 9, '+252': 8, '+253': 6, '+254': 9, '+255': 9, '+256': 9, '+257': 8, '+258': 9,
-        '+260': 9, '+261': 9, '+262': 9, '+263': 9, '+264': 9, '+265': 9, '+266': 8, '+267': 7,
-        '+268': 8, '+269': 7, '+352': 9, '+353': 9, '+354': 7, '+355': 9, '+356': 8, '+357': 8,
-        '+358': 11, '+370': 8, '+371': 8, '+372': 8, '+373': 8, '+374': 8, '+375': 9, '+376': 6,
-        '+377': 9, '+378': 9, '+380': 9, '+381': 9, '+382': 8, '+385': 9, '+386': 8, '+387': 8,
-        '+389': 8, '+420': 9, '+421': 9, '+423': 9, '+500': 5, '+501': 7, '+502': 8, '+503': 8,
-        '+504': 8, '+505': 8, '+506': 8, '+507': 8, '+508': 6, '+509': 8, '+590': 9, '+591': 8,
-        '+592': 7, '+593': 9, '+594': 9, '+595': 9, '+596': 9, '+597': 7, '+598': 8, '+599': 8,
-        '+670': 7, '+672': 5, '+673': 7, '+674': 7, '+675': 8, '+676': 5, '+677': 5, '+678': 5,
-        '+679': 7, '+680': 7, '+681': 6, '+682': 5, '+683': 4, '+685': 7, '+687': 6, '+688': 5,
-        '+689': 6, '+690': 5, '+691': 7, '+692': 7, '+850': 10, '+852': 8, '+853': 8, '+855': 9,
-        '+856': 9, '+880': 10, '+886': 9, '+960': 7, '+961': 8, '+962': 9, '+963': 9, '+964': 10,
-        '+965': 8, '+966': 9, '+967': 9, '+968': 8, '+971': 9, '+972': 9, '+973': 8, '+974': 8,
-        '+975': 8, '+976': 8, '+977': 10, '+992': 9, '+993': 8, '+994': 9, '+995': 9, '+996': 9,
-        '+998': 9
+    if (btnResendOtp) {
+      btnResendOtp.onclick = () => {
+        if (typeof window.retryOtp === 'function') { window.retryOtp(); showToast('OTP resent.'); }
+        else if (btnSendOtp) btnSendOtp.click();
       };
-      return limits[countryCodeValue] || 15;
     }
 
-    function enforcePhoneValidation() {
-      if (!phoneNumberInput || !phoneCountryCode) return true;
-      const maxDigits = getPhoneLengthLimit(phoneCountryCode.value);
-      const sanitized = phoneNumberInput.value.replace(/\D/g, '').slice(0, maxDigits);
-      if (phoneNumberInput.value !== sanitized) {
-        phoneNumberInput.value = sanitized;
-        showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${phoneCountryCode.value}.`, 'error');
-        return false;
-      }
-      phoneNumberInput.maxLength = maxDigits;
-      return true;
-    }
+    if (btnVerifyOtp) {
+      const executeVerifyOtp = () => {
+        const otpInput = container.querySelector('#otp-code');
+        const otp = otpInput ? otpInput.value.trim() : '';
+        const phoneInput = container.querySelector('#phone-number');
+        const phone = phoneInput ? phoneInput.value.trim() : '';
+        const agency = container.querySelector('#phone-agency')?.value || 'Independent NGO';
 
-    if (phoneCountryCode && phoneNumberInput) {
-      phoneCountryCode.addEventListener('change', () => {
-        phoneNumberInput.maxLength = getPhoneLengthLimit(phoneCountryCode.value);
-        phoneNumberInput.value = phoneNumberInput.value.replace(/\D/g, '').slice(0, phoneNumberInput.maxLength);
-      });
-      phoneNumberInput.addEventListener('input', () => {
-        enforcePhoneValidation();
-      });
-    }
-
-    function showCreateAccountPanel(show) {
-      if (createAccountPanel) {
-        createAccountPanel.style.display = show ? 'block' : 'none';
-      }
-      if (show) {
-        if (phonePanel) phonePanel.style.display = 'none';
-        if (otpSection) otpSection.style.display = 'none';
-        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
-        if (otpInput) otpInput.value = '';
-      }
-    }
-
-    if (btnShowCreateAccount) {
-      btnShowCreateAccount.onclick = () => showCreateAccountPanel(true);
-    }
-
-    if (btnBackToLogin) {
-      btnBackToLogin.onclick = () => showCreateAccountPanel(false);
-    }
-
-    if (btnSubmitCreateAccount) {
-      btnSubmitCreateAccount.onclick = () => {
-        const name = createAccountName?.value.trim();
-        const email = createAccountEmail?.value.trim();
-        const password = createAccountPassword?.value.trim();
-
-        if (!name || !email || !password) {
-          showNotification('Please complete your name, email, and password.', 'error');
+        if (!otp) {
+          showAuthError('Please enter the OTP you received.');
+          showToast('Please enter the OTP code.', 'error');
+          if (otpInput) otpInput.focus();
           return;
         }
 
-        store.setCurrentUser({
-          id: `usr-create-${Date.now()}`,
-          name,
-          role: 'admin',
-          agency: 'New User Registration',
-          badgeId: 'NEW-USER',
-          avatar: name.slice(0, 2).toUpperCase(),
-          authMethod: 'create-account',
-          email,
-          phone: null
+        if (otp.length < 4) {
+          showAuthError('Invalid OTP code. Please enter the complete code.');
+          showToast('Invalid OTP. Code must be at least 4 digits.', 'error');
+          if (otpInput) otpInput.focus();
+          return;
+        }
+
+        if (typeof window.verifyOtp !== 'function') {
+          showAuthError('OTP service is not ready. Please refresh and try again.');
+          showToast('OTP service is not ready. Please refresh and try again.', 'error');
+          return;
+        }
+
+        btnVerifyOtp.disabled = true;
+        const original = btnVerifyOtp.innerHTML;
+        btnVerifyOtp.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+
+        window.verifyOtp(
+          otp,
+          (data) => {
+            btnVerifyOtp.disabled = false;
+            btnVerifyOtp.innerHTML = original;
+
+            // Notification when OTP is correct
+            showToast('OTP verified successfully! Signed in with phone.', 'success');
+
+            store.setCurrentUser({
+              id: 'phone-' + phone.replace(/[^0-9]/g, ''),
+              email: null,
+              phone: phone,
+              name: phone,
+              agency: agency,
+              role: 'coordinator',
+              avatar: phone.slice(-2),
+              authProvider: 'phone'
+            });
+            store.setCurrentView('overview');
+
+            const accessToken = data && (data.message || data.accessToken || data['access-token']);
+            if (accessToken) {
+              fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken })
+              }).catch(() => {});
+            }
+          },
+          (err) => {
+            btnVerifyOtp.disabled = false;
+            btnVerifyOtp.innerHTML = original;
+
+            // Notification when OTP is invalid
+            const errMsg = (err && (err.message || err.description))
+              ? (err.message || err.description)
+              : (typeof err === 'string' ? err : 'Invalid OTP. Please check the code and try again.');
+
+            showToast('Invalid OTP: ' + errMsg, 'error');
+            showAuthError('Incorrect or expired OTP: ' + errMsg);
+
+            if (otpInput) {
+              otpInput.focus();
+              otpInput.select();
+            }
+          }
+        );
+      };
+
+      btnVerifyOtp.onclick = executeVerifyOtp;
+
+      const otpInputField = container.querySelector('#otp-code');
+      if (otpInputField) {
+        otpInputField.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeVerifyOtp();
+          }
         });
-
-        showNotification(`Account created for ${email}. Welcome aboard!`, 'success');
-        store.setCurrentView('overview');
-      };
+      }
     }
 
-    if (phoneBtn && phonePanel) {
-      phoneBtn.onclick = () => {
-        const isVisible = phonePanel.style.display === 'block';
-        phonePanel.style.display = isVisible ? 'none' : 'block';
-        if (!isVisible) {
-          if (otpSection) otpSection.style.display = 'none';
-          if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
-          if (otpInput) otpInput.value = '';
-        }
-      };
-    }
-
-    if (sendOtpBtn && phoneNumberInput && phoneCountryCode && otpSection && verifyOtpBtn && otpInput) {
-      sendOtpBtn.onclick = () => {
-        const value = phoneNumberInput.value.trim();
-        if (!value) {
-          phoneNumberInput.focus();
-          showNotification('Please enter a mobile number first.', 'error');
-          return;
-        }
-
-        if (!enforcePhoneValidation()) {
-          phoneNumberInput.focus();
-          return;
-        }
-
-        const maxDigits = getPhoneLengthLimit(phoneCountryCode.value);
-        if (value.replace(/\D/g, '').length > maxDigits) {
-          showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${phoneCountryCode.value}.`, 'error');
-          phoneNumberInput.focus();
-          return;
-        }
-
-        generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
-        otpSection.style.display = 'block';
-        verifyOtpBtn.style.display = 'inline-flex';
-        sendOtpBtn.textContent = 'Resend OTP';
-        otpInput.value = '';
-        otpInput.setAttribute('placeholder', `OTP sent to ${phoneCountryCode.value} ${value}`);
-        showNotification(`OTP sent to ${phoneCountryCode.value} ${value}. Demo code: ${generatedOtp}`, 'success');
-      };
-    }
-
-    if (verifyOtpBtn && phoneNumberInput && phoneCountryCode && otpInput) {
-      verifyOtpBtn.onclick = () => {
-        const otpCode = otpInput.value.trim();
-        if (!otpCode) {
-          otpInput.focus();
-          showNotification('Please enter the OTP.', 'error');
-          return;
-        }
-
-        if (otpCode !== generatedOtp) {
-          showNotification('Invalid OTP. Please use the generated code.', 'error');
-          return;
-        }
-
-        const agency = container.querySelector('#auth-agency')?.value || 'FEMA Regional Command';
-        const phoneValue = `${phoneCountryCode.value} ${phoneNumberInput.value.trim()}`;
-        store.setCurrentUser({
-          id: `usr-phone-${Date.now()}`,
-          name: `Officer ${phoneValue}`,
-          agency: agency,
-          role: 'responder',
-          badgeId: 'OTP-USER',
-          avatar: 'PH',
-          authMethod: 'phone',
-          phone: phoneValue,
-          email: null
-        });
-        showNotification(`Signed in successfully with phone number ${phoneValue}.`, 'success');
-        store.setCurrentView('overview');
-      };
-    }
-
-    // Google Sign-In
     const googleBtn = container.querySelector('#btn-google-signin');
     if (googleBtn) {
       googleBtn.onclick = async () => {
@@ -1433,7 +1131,6 @@
       };
     }
 
-    // Apple Sign-In
     const appleBtn = container.querySelector('#btn-apple-signin');
     if (appleBtn) {
       appleBtn.onclick = async () => {
@@ -1448,7 +1145,6 @@
       };
     }
 
-    // Email/Password Auth Form
     const authForm = container.querySelector('#auth-sign-in-form');
     if (authForm) {
       authForm.onsubmit = async (e) => {
@@ -1464,21 +1160,14 @@
 
         setAuthLoading(true);
 
-        // Try Firebase auth first
         if (store.firebaseAuth) {
-          let result;
-          if (isRegisterMode) {
-            result = await store.registerWithEmail(email, password);
-          } else {
-            result = await store.signInWithEmail(email, password);
-          }
+          const result = isRegisterMode ? await store.registerWithEmail(email, password) : await store.signInWithEmail(email, password);
 
           if (result.success) {
             if (store.currentUser) {
               store.currentUser.agency = agency;
               store.saveState();
             }
-            showNotification(`Signed in successfully with ${email}.`, 'success');
             return;
           } else {
             showAuthError(result.error);
@@ -1487,7 +1176,6 @@
           }
         }
 
-        // Fallback: Demo sign-in if Firebase not configured
         store.setCurrentUser({
           id: `usr-${Date.now()}`,
           email: email,
@@ -1497,52 +1185,10 @@
           avatar: email.slice(0, 2).toUpperCase(),
           authProvider: 'demo'
         });
-        showNotification(`Signed in successfully with ${email}.`, 'success');
         store.setCurrentView('overview');
       };
     }
 
-    // Firebase Config Save Form
-    const fbConfigForm = container.querySelector('#form-firebase-config');
-    if (fbConfigForm) {
-      fbConfigForm.onsubmit = (e) => {
-        e.preventDefault();
-        const newConfig = {
-          apiKey: container.querySelector('#fb-api-key').value.trim(),
-          authDomain: container.querySelector('#fb-auth-domain').value.trim(),
-          projectId: container.querySelector('#fb-project-id').value.trim(),
-          storageBucket: container.querySelector('#fb-storage-bucket').value.trim(),
-          messagingSenderId: container.querySelector('#fb-messaging-sender-id').value.trim(),
-          appId: container.querySelector('#fb-app-id').value.trim()
-        };
-
-        if (!newConfig.apiKey || !newConfig.projectId) {
-          alert('API Key and Project ID are required!');
-          return;
-        }
-
-        store.updateFirebaseConfig(newConfig);
-        const msg = container.querySelector('#firebase-save-msg');
-        if (msg) {
-          msg.style.display = 'block';
-          setTimeout(() => { msg.style.display = 'none'; }, 5000);
-        }
-      };
-    }
-
-    // Demo Sign In
-    container.querySelectorAll('.demo-sign-in-btn').forEach(btn => {
-      btn.onclick = (e) => {
-        const uId = e.currentTarget.getAttribute('data-user-id');
-        const found = agencyUsers.find(u => u.id === uId);
-        if (found) {
-          store.setCurrentUser(found);
-          store.setCurrentView('overview');
-        }
-      };
-    });
-
-    // Role switcher
     container.querySelectorAll('.role-btn').forEach(btn => {
       btn.onclick = (e) => {
         const uId = e.currentTarget.getAttribute('data-user-id');
@@ -1551,17 +1197,14 @@
       };
     });
 
-    // Sign Out button
-    const signOutBtn = container.querySelector('#btn-sign-out');
-    if (signOutBtn) signOutBtn.onclick = () => store.signOut();
+    // Sign Out & Theme Toggle use a single delegated listener (attached once,
+    // below) instead of being rebound here, so they always work immediately
+    // even right after a re-render — no refresh needed.
 
     const contrastBtn = container.querySelector('#btn-toggle-contrast');
     if (contrastBtn) contrastBtn.onclick = () => store.toggleHighContrast();
 
     const syncBtn = container.querySelector('#btn-sync-status');
-    const themeBtn = container.querySelector('#btn-toggle-theme');
-    if (themeBtn) themeBtn.onclick = () => { store.toggleTheme(); showToast(`Appearance switched to ${store.theme === 'light' ? 'Light' : 'Dark'} mode.`); };
-
     if (syncBtn) syncBtn.onclick = () => store.toggleNetworkStatus();
 
     container.querySelectorAll('.nav-item-btn').forEach(btn => {
@@ -1624,7 +1267,6 @@
       btn.onclick = (e) => store.updateIncidentStatus(e.currentTarget.getAttribute('data-inc-id'), e.currentTarget.getAttribute('data-target'));
     });
 
-    // MAP INITIALIZATION (LIVE WORLD DISASTERS)
     if (store.currentView === 'map') {
       setTimeout(() => {
         const mapEl = container.querySelector('#disaster-map-element');
@@ -1650,8 +1292,6 @@
 
           window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-          // High-resolution global imagery and place labels, presented as a
-          // Google-Earth-style hybrid view without copying Google's tiles.
           const satelliteLayer = window.L.layerGroup([
             window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
               maxZoom: 19,
@@ -1677,7 +1317,7 @@
             if (!liveStatus) return;
             const weatherText = weatherCount ? weatherCount.textContent : 'Unavailable';
             const fireText = wildfireCount ? wildfireCount.textContent : 'Unavailable';
-            liveStatus.textContent = `Live feeds • Alerts: ${weatherText} • Wildfires: ${fireText}`;
+            liveStatus.textContent = `Live feeds \u2022 Alerts: ${weatherText} \u2022 Wildfires: ${fireText}`;
           };
           const toggleLayer = (selector, layer) => {
             const input = container.querySelector(selector);
@@ -1692,15 +1332,12 @@
           toggleLayer('#layer-wildfires', wildfiresLayer);
           if (container.querySelector('#layer-satellite')?.checked) satelliteLayer.addTo(map);
 
-          // NOAA National Weather Service: current U.S. public weather alerts.
           fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert')
             .then((response) => {
               if (!response.ok) throw new Error(`NOAA response ${response.status}`);
               return response.json();
             })
             .then((data) => {
-              // Use lightweight alert beacons instead of large geometry outlines.
-              // This keeps panning and fractional zoom smooth at a global scale.
               const alerts = (data.features || []).slice(0, 75);
               alerts.forEach((alert) => {
                 const properties = alert.properties || {};
@@ -1730,7 +1367,6 @@
               updateLiveStatus();
             });
 
-          // NASA EONET: open natural-event records, filtered to active wildfires.
           fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&limit=100')
             .then((response) => {
               if (!response.ok) throw new Error(`NASA response ${response.status}`);
@@ -1815,6 +1451,7 @@
     if (store.currentView === 'login' || !store.currentUser) {
       app.innerHTML = renderLoginView();
       bindEvents(app);
+      initMsg91Widget();
       return;
     }
 
@@ -1854,4 +1491,3 @@
   }
 
 })();
-

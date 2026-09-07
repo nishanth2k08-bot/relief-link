@@ -258,10 +258,9 @@ export function renderLoginView() {
           </p>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px;">
+        <div id="sign-in-methods" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <div style="margin-bottom: 4px;">
             <span style="font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Sign in</span>
-            <button type="button" id="btn-show-create-account" class="btn btn-secondary btn-sm" style="padding: 8px 12px; border-radius: 999px;">Create account</button>
           </div>
           <button type="button" class="btn btn-secondary btn-sm" style="justify-content: center; width: 100%;">Continue with Google</button>
           <button type="button" class="btn btn-secondary btn-sm" style="justify-content: center; width: 100%;">Continue with Apple</button>
@@ -288,33 +287,15 @@ export function renderLoginView() {
           <button type="button" id="btn-submit-create-account" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">Create Account</button>
         </div>
 
-        <div id="phone-auth-panel" style="display: none; margin-bottom: 18px;">
-          <div class="form-group">
-            <label class="form-label">Mobile Number</label>
-            <div style="display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-app); align-items: stretch;">
-              <div style="position: relative; display: flex; align-items: center; background: var(--bg-card); border-right: 1px solid var(--border-color);">
-                <select id="phone-country-code" aria-label="Country code" style="border: none; background: var(--bg-card); color: var(--text-main); padding: 10px 28px 10px 10px; width: 120px; min-width: 120px; font-size: 0.76rem; text-align: center; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer;">
-                  ${phoneCountryOptions.map(option => `
-                    <option value="${option.value}" ${option.value === '+91' ? 'selected' : ''} style="color: var(--text-main); background: var(--bg-card);">${option.label}</option>
-                  `).join('')}
-                </select>
-                <span aria-hidden="true" style="position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--text-main); font-size: 0.7rem; pointer-events: none;">▲</span>
-              </div>
-              <input type="tel" id="phone-number-input" inputmode="numeric" placeholder="98765 43210" style="border: none; background: transparent; flex: 1; min-width: 0; padding: 12px 14px; color: var(--text-main); font-size: 0.95rem;" />
-            </div>
+        <div id="phone-auth-panel" style="display: none; margin-bottom: 18px; padding: 18px; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: rgba(59,130,246,0.04);">
+          <div style="margin-bottom: 16px;">
+            <label class="form-label">Verify with Phone Number</label>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 8px 0 0 0;">MSG91 will send a secure OTP to your phone</p>
           </div>
-
-          <div id="otp-section" style="display: none; margin-top: 12px;">
-            <div class="form-group">
-              <label class="form-label">Enter OTP</label>
-              <input type="text" id="otp-input" maxlength="6" placeholder="6-digit code" style="letter-spacing: 0.2em; text-align: center;" />
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button type="button" id="btn-send-otp" class="btn btn-primary btn-sm" style="flex: 1;">Send OTP</button>
-            <button type="button" id="btn-verify-otp" class="btn btn-secondary btn-sm" style="flex: 1; display: none;">Verify OTP</button>
-          </div>
+          
+          <div id="msg91-otp-widget-container" style="padding: 20px 0;"></div>
+          
+          <button type="button" id="btn-back-from-phone" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; margin-top: 12px;">Back to Sign In</button>
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0;">
@@ -371,27 +352,23 @@ export function renderLoginView() {
 
 export function bindLoginViewEvents(container) {
   const form = container.querySelector('#agency-login-form');
+  const signInMethods = container.querySelector('#sign-in-methods');
   const phonePanel = container.querySelector('#phone-auth-panel');
   const phoneBtn = container.querySelector('#btn-phone-signin');
   const createAccountPanel = container.querySelector('#create-account-panel');
-  const btnShowCreateAccount = container.querySelector('#btn-show-create-account');
   const btnBackToLogin = container.querySelector('#btn-back-to-login');
+  const btnBackFromPhone = container.querySelector('#btn-back-from-phone');
   const btnSubmitCreateAccount = container.querySelector('#btn-submit-create-account');
   const createInputName = container.querySelector('#create-account-name');
   const createInputEmail = container.querySelector('#create-account-email');
   const createInputPassword = container.querySelector('#create-account-password');
-  const countryCode = container.querySelector('#phone-country-code');
-  const phoneInput = container.querySelector('#phone-number-input');
-  const otpSection = container.querySelector('#otp-section');
-  const otpInput = container.querySelector('#otp-input');
-  const sendOtpBtn = container.querySelector('#btn-send-otp');
-  const verifyOtpBtn = container.querySelector('#btn-verify-otp');
   const tabLogin = container.querySelector('#tab-btn-login');
   const tabRegister = container.querySelector('#tab-btn-register');
   const submitBtn = form?.querySelector('button[type="submit"]');
+  const msg91WidgetContainer = container.querySelector('#msg91-otp-widget-container');
 
   let isRegisterMode = false;
-  let generatedOtp = '';
+  let widgetInitialized = false;
 
   function showNotification(message, type = 'success') {
     const existing = container.querySelector('.login-notification');
@@ -413,6 +390,83 @@ export function bindLoginViewEvents(container) {
     notice.style.background = type === 'error' ? '#ef4444' : '#10b981';
     document.body.appendChild(notice);
     setTimeout(() => notice.remove(), 3500);
+  }
+
+  function initializeMSG91Widget() {
+    if (widgetInitialized) return;
+    
+    widgetInitialized = true;
+
+    const configuration = {
+      widgetId: "366961684b49323831383138",
+      tokenAuth: "temp_token_" + Date.now(), // Temporary token - replace with real auth
+      exposeMethods: true,
+      success: (data) => {
+        console.log('MSG91 OTP Verified:', data);
+        
+        // Extract phone number from verified data if available
+        const phoneNumber = data.phone || "Verified Phone";
+        
+        const agency = container.querySelector('#login-agency-select').value;
+        const badgeId = container.querySelector('#login-badge-id').value;
+        const role = container.querySelector('#login-role-select').value;
+
+        store.setCurrentUser({
+          id: `usr-phone-${Date.now()}`,
+          name: `Officer ${phoneNumber}`,
+          role: role,
+          agency: agency,
+          badgeId: badgeId,
+          avatar: badgeId.slice(0, 2).toUpperCase(),
+          authMethod: 'phone',
+          phone: phoneNumber,
+          email: null,
+          authToken: data.token || data.verified_token
+        });
+
+        showNotification('OTP verified successfully! Signed in with phone verification.', 'success');
+        store.setCurrentView('overview');
+      },
+      failure: (error) => {
+        console.error('MSG91 OTP Verification Error:', error);
+        const errDetail = error && (error.message || error.description) ? (error.message || error.description) : (error || 'Verification failed. Please check the code and try again.');
+        showNotification(`Invalid OTP: ${errDetail}`, 'error');
+      }
+    };
+
+    // Load and initialize MSG91 OTP script
+    (function loadOtpScript(urls) {
+      let i = 0;
+      function attempt() {
+        const s = document.createElement('script');
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => {
+          console.log('MSG91 script loaded, initializing widget');
+          if (typeof window.initSendOTP === 'function') {
+            window.initSendOTP(configuration);
+          } else {
+            console.warn('window.initSendOTP not available');
+            showNotification('Widget initialization pending...', 'error');
+          }
+        };
+        s.onerror = () => {
+          console.error(`Failed to load script from ${urls[i]}`);
+          i++;
+          if (i < urls.length) {
+            console.log(`Attempting backup URL: ${urls[i]}`);
+            attempt();
+          } else {
+            showNotification('Failed to load OTP widget. Please refresh.', 'error');
+          }
+        };
+        document.head.appendChild(s);
+      }
+      attempt();
+    })([
+      'https://verify.msg91.com/otp-provider.js',
+      'https://verify.phone91.com/otp-provider.js'
+    ]);
   }
 
   function setRegisterMode(mode) {
@@ -438,20 +492,27 @@ export function bindLoginViewEvents(container) {
   function showCreateAccountPanel(show) {
     if (!createAccountPanel) return;
     createAccountPanel.style.display = show ? 'block' : 'none';
+    if (signInMethods) {
+      signInMethods.style.display = show ? 'none' : 'flex';
+    }
     if (show) {
       if (phonePanel) phonePanel.style.display = 'none';
-      if (otpSection) otpSection.style.display = 'none';
-      if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
-      if (otpInput) otpInput.value = '';
     }
   }
 
-  if (btnShowCreateAccount) {
-    btnShowCreateAccount.addEventListener('click', () => showCreateAccountPanel(true));
+  if (btnBackToLogin) {
+    btnBackToLogin.addEventListener('click', () => {
+      showCreateAccountPanel(false);
+      if (phonePanel) phonePanel.style.display = 'none';
+    });
   }
 
-  if (btnBackToLogin) {
-    btnBackToLogin.addEventListener('click', () => showCreateAccountPanel(false));
+  if (btnBackFromPhone) {
+    btnBackFromPhone.addEventListener('click', () => {
+      if (phonePanel) phonePanel.style.display = 'none';
+      if (signInMethods) signInMethods.style.display = 'flex';
+      widgetInitialized = false; // Reset widget state
+    });
   }
 
   if (btnSubmitCreateAccount) {
@@ -482,110 +543,25 @@ export function bindLoginViewEvents(container) {
     });
   }
 
-  function enforcePhoneValidation() {
-    if (!phoneInput || !countryCode) return true;
-
-    const maxDigits = getPhoneLengthLimit(countryCode.value);
-    const sanitizedValue = phoneInput.value.replace(/\D/g, '').slice(0, maxDigits);
-
-    if (phoneInput.value !== sanitizedValue) {
-      phoneInput.value = sanitizedValue;
-      showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${countryCode.value}.`, 'error');
-      return false;
-    }
-
-    phoneInput.maxLength = maxDigits;
-    return true;
-  }
-
-  if (countryCode && phoneInput) {
-    countryCode.addEventListener('change', () => {
-      phoneInput.maxLength = getPhoneLengthLimit(countryCode.value);
-      const digitsOnly = phoneInput.value.replace(/\D/g, '').slice(0, phoneInput.maxLength);
-      phoneInput.value = digitsOnly;
-    });
-
-    phoneInput.addEventListener('input', () => {
-      enforcePhoneValidation();
-    });
-  }
-
   if (phoneBtn && phonePanel) {
     phoneBtn.addEventListener('click', () => {
-      phonePanel.style.display = phonePanel.style.display === 'none' ? 'block' : 'none';
+      const isOpen = phonePanel.style.display === 'block';
+      phonePanel.style.display = isOpen ? 'none' : 'block';
+
+      if (createAccountPanel) {
+        createAccountPanel.style.display = 'none';
+      }
+
+      if (signInMethods) {
+        signInMethods.style.display = 'flex';
+      }
+
+      // Initialize widget when phone panel is opened
       if (phonePanel.style.display === 'block') {
-        otpSection.style.display = 'none';
-        verifyOtpBtn.style.display = 'none';
-        if (otpInput) otpInput.value = '';
+        setTimeout(() => {
+          initializeMSG91Widget();
+        }, 100);
       }
-    });
-  }
-
-  if (sendOtpBtn && otpSection && verifyOtpBtn && phoneInput && countryCode && otpInput) {
-    sendOtpBtn.addEventListener('click', () => {
-      const phoneNumber = phoneInput.value.trim();
-      if (!phoneNumber) {
-        phoneInput.focus();
-        showNotification('Please enter a mobile number first.', 'error');
-        return;
-      }
-
-      if (!enforcePhoneValidation()) {
-        phoneInput.focus();
-        return;
-      }
-
-      const maxDigits = getPhoneLengthLimit(countryCode.value);
-      if (phoneNumber.replace(/\D/g, '').length > maxDigits) {
-        showNotification(`Invalid number. Maximum ${maxDigits} digits allowed for ${countryCode.value}.`, 'error');
-        phoneInput.focus();
-        return;
-      }
-
-      generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
-      const fullNumber = `${countryCode.value} ${phoneNumber}`;
-      otpSection.style.display = 'block';
-      verifyOtpBtn.style.display = 'inline-flex';
-      sendOtpBtn.textContent = 'Resend OTP';
-      otpInput.value = '';
-      otpInput.setAttribute('placeholder', `OTP sent to ${fullNumber}`);
-      showNotification(`OTP sent to ${fullNumber}. Demo code: ${generatedOtp}`, 'success');
-    });
-  }
-
-  if (verifyOtpBtn && otpInput && form && countryCode && phoneInput) {
-    verifyOtpBtn.addEventListener('click', () => {
-      const otpCode = otpInput.value.trim();
-      if (!otpCode) {
-        otpInput.focus();
-        showNotification('Please enter the OTP.', 'error');
-        return;
-      }
-
-      if (otpCode !== generatedOtp) {
-        showNotification('Invalid OTP. Please use the generated code.', 'error');
-        return;
-      }
-
-      const agency = container.querySelector('#login-agency-select').value;
-      const badgeId = container.querySelector('#login-badge-id').value;
-      const role = container.querySelector('#login-role-select').value;
-      const phoneNumber = `${countryCode.value} ${phoneInput.value.trim()}`;
-
-      store.setCurrentUser({
-        id: `usr-phone-${Date.now()}`,
-        name: `Officer ${phoneNumber}`,
-        role: role,
-        agency: agency,
-        badgeId: badgeId,
-        avatar: badgeId.slice(0, 2).toUpperCase(),
-        authMethod: 'phone',
-        phone: phoneNumber,
-        email: null
-      });
-
-      showNotification(`Signed in successfully with phone number ${phoneNumber}.`, 'success');
-      store.setCurrentView('overview');
     });
   }
 
@@ -614,14 +590,4 @@ export function bindLoginViewEvents(container) {
     });
   }
 
-  container.querySelectorAll('.demo-user-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const uId = e.currentTarget.getAttribute('data-user-id');
-      const found = agencyUsers.find(u => u.id === uId);
-      if (found) {
-        store.setCurrentUser(found);
-        store.setCurrentView('overview');
-      }
-    });
-  });
 }
