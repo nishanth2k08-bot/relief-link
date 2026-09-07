@@ -1,4 +1,4 @@
-/* ReliefLink AI Coordinator — secure chat UI for the Multi-Agency feed. */
+/* ReliefLink AI Coordinator — shown only inside the Multi-Agency feed. */
 (function () {
   'use strict';
   if (window.__reliefLinkAICoordinator) return;
@@ -7,17 +7,20 @@
   const STYLE_ID = 'relief-link-ai-coordinator-style';
   const PANEL_ID = 'relief-link-ai-coordinator';
   const state = { messages: [] };
+  const FEED_VIEWS = new Set(['comms', 'communications', 'multi-agency', 'multiAgency', 'agencyFeed']);
 
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   }
 
   function getAppState() {
-    try {
-      return JSON.parse(localStorage.getItem('relieflink_state_v1') || '{}');
-    } catch (_) {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem('relieflink_state_v1') || '{}'); }
+    catch (_) { return {}; }
+  }
+
+  function isFeedView() {
+    const view = String(getAppState().currentView || '').trim();
+    return FEED_VIEWS.has(view) || /multi.?agency|agency.?feed|comms|communications/i.test(view);
   }
 
   function operationalContext() {
@@ -26,7 +29,8 @@
       incidents: Array.isArray(s.incidents) ? s.incidents : [],
       resources: Array.isArray(s.resources) ? s.resources : [],
       teams: Array.isArray(s.teams) ? s.teams : [],
-      user: s.currentUser || null
+      user: s.currentUser || null,
+      chatMessages: Array.isArray(s.chatMessages) ? s.chatMessages : []
     };
   }
 
@@ -35,12 +39,12 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      #${PANEL_ID} { position:fixed; right:24px; bottom:24px; z-index:99999; font-family:Inter,system-ui,sans-serif; }
-      #${PANEL_ID} .rl-ai-launch { border:0; border-radius:999px; padding:13px 18px; background:#2563eb; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.28); display:flex; align-items:center; gap:9px; }
-      #${PANEL_ID} .rl-ai-window { display:none; width:min(420px,calc(100vw - 32px)); height:min(620px,calc(100vh - 110px)); background:#0f172a; color:#e5e7eb; border:1px solid rgba(148,163,184,.25); border-radius:18px; overflow:hidden; box-shadow:0 25px 70px rgba(0,0,0,.45); }
+      #${PANEL_ID} { margin:16px 0 0; width:100%; font-family:Inter,system-ui,sans-serif; }
+      #${PANEL_ID} .rl-ai-launch { border:0; border-radius:10px; padding:11px 16px; background:#2563eb; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(37,99,235,.22); display:flex; align-items:center; gap:9px; }
+      #${PANEL_ID} .rl-ai-window { display:none; width:100%; max-width:720px; height:min(560px,65vh); margin-top:12px; background:#0f172a; color:#e5e7eb; border:1px solid rgba(148,163,184,.25); border-radius:16px; overflow:hidden; box-shadow:0 15px 45px rgba(0,0,0,.24); }
       #${PANEL_ID}.open .rl-ai-window { display:flex; flex-direction:column; }
       #${PANEL_ID}.open .rl-ai-launch { display:none; }
-      #${PANEL_ID} .rl-ai-head { padding:15px 16px; background:#172554; border-bottom:1px solid rgba(148,163,184,.2); display:flex; align-items:center; justify-content:space-between; }
+      #${PANEL_ID} .rl-ai-head { padding:14px 16px; background:#172554; border-bottom:1px solid rgba(148,163,184,.2); display:flex; align-items:center; justify-content:space-between; }
       #${PANEL_ID} .rl-ai-title { font-weight:800; font-size:15px; }
       #${PANEL_ID} .rl-ai-sub { font-size:11px; opacity:.7; margin-top:3px; }
       #${PANEL_ID} .rl-ai-close { border:0; background:transparent; color:#cbd5e1; font-size:20px; cursor:pointer; }
@@ -74,11 +78,9 @@
     ui.input.value = '';
     ui.status.textContent = 'AI coordinator is analyzing the operational picture…';
     ui.send.disabled = true;
-
     try {
       const response = await fetch('/api/agency-ai', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
+        method:'POST', headers:{ 'Content-Type':'application/json' },
         body:JSON.stringify({ messages:state.messages, context:operationalContext() })
       });
       const data = await response.json().catch(() => ({}));
@@ -91,14 +93,17 @@
       renderMessages(ui.messages);
       ui.status.textContent = 'AI service unavailable';
     } finally {
-      ui.sending = false;
-      ui.send.disabled = false;
-      ui.input.focus();
+      ui.sending = false; ui.send.disabled = false; ui.input.focus();
     }
   }
 
+  function unmount() {
+    const root = document.getElementById(PANEL_ID);
+    if (root) root.remove();
+  }
+
   function mount() {
-    if (!document.body || document.getElementById(PANEL_ID)) return;
+    if (!isFeedView() || !document.body || document.getElementById(PANEL_ID)) return;
     addStyles();
     const root = document.createElement('div');
     root.id = PANEL_ID;
@@ -121,10 +126,14 @@
           <div class="rl-ai-status">AI suggestions are advisory. A human coordinator must approve real-world actions.</div>
         </div>
       </section>`;
-    document.body.appendChild(root);
+
+    // Put the coordinator inside the current Multi-Agency view rather than fixed to the whole app.
+    const app = document.querySelector('#app');
+    const target = app && (app.querySelector('.view-content, .page-content, .content-area, .main-content') || app);
+    target.appendChild(root);
 
     const ui = { root, launch:root.querySelector('.rl-ai-launch'), close:root.querySelector('.rl-ai-close'), messages:root.querySelector('.rl-ai-messages'), input:root.querySelector('textarea'), send:root.querySelector('.rl-ai-send'), clear:root.querySelector('.rl-ai-clear'), status:root.querySelector('.rl-ai-status'), sending:false };
-    state.messages.push({ role:'assistant', content:'Hello. I\'m the ReliefLink AI Coordinator. I can analyze the current incidents, teams and resources, help prioritize work, and draft messages for the agencies. I will not claim that a real-world action happened unless the system confirms it.' });
+    if (!state.messages.length) state.messages.push({ role:'assistant', content:'Hello. I\'m the ReliefLink AI Coordinator. I can analyze the current incidents, teams, resources and agency feed, help prioritize work, and draft messages. Real-world actions require human confirmation.' });
     renderMessages(ui.messages);
     ui.launch.addEventListener('click', () => root.classList.add('open'));
     ui.close.addEventListener('click', () => root.classList.remove('open'));
@@ -134,5 +143,16 @@
     root.querySelectorAll('.rl-ai-suggestion').forEach(btn => btn.addEventListener('click', () => sendMessage(btn.textContent, ui)));
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once:true }); else mount();
+  function syncVisibility() {
+    if (isFeedView()) mount(); else unmount();
+  }
+
+  function init() {
+    syncVisibility();
+    document.addEventListener('click', () => setTimeout(syncVisibility, 0), true);
+    setInterval(syncVisibility, 500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
+  else init();
 })();
