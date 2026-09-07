@@ -11,8 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   
-  <!-- Leaflet CSS for GIS Disaster Map -->
+  <!-- Leaflet CSS retained for the existing map/data layer -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  
+  <!-- CesiumJS 3D Earth -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   
   <!-- FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,7 +29,7 @@
     <!-- Application content dynamically rendered -->
   </div>
 
-  <!-- Leaflet JS for GIS Disaster Map -->
+  <!-- Leaflet JS retained for compatibility with the existing application -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   
   <!-- Chart.js for Disaster Analytics & SitRep -->
@@ -42,8 +46,11 @@
   <!-- ReliefLink Standalone JavaScript Bundle -->
   <script src="js/bundle.js?v=20260907-otp-4digit"></script>
 
-  <!-- Live disaster data bridge + official public feeds -->
+  <!-- Existing Leaflet live-data bridge (kept for compatibility) -->
   <script src="js/liveDisasterMapBridge.js?v=20260907-live"></script>
   <script src="js/liveDisasterData.js?v=20260907-live"></script>
+
+  <!-- 3D Earth replaces the static Leaflet map visually -->
+  <script src="js/earth3d.js?v=20260907-3d-earth"></script>
 </body>
 </html>
