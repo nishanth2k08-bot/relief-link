@@ -17,7 +17,7 @@
 <body class="theme-light">
   <div id="app" class="app-container"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <!-- Block the legacy Leaflet map constructor before the application renders its map. -->
+  <!-- Keep Leaflet available for legacy application code, but prevent it from rendering over Cesium. -->
   <script src="js/leaflet3dGuard.js?v=20260907-guard"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -27,6 +27,7 @@
   <script src="js/bundle.js?v=20260907-otp-4digit"></script>
   <script src="js/liveDisasterMapBridge.js?v=20260907-live"></script>
   <script src="js/liveDisasterData.js?v=20260907-live"></script>
-  <script src="js/earth3d-v2.js?v=20260907-3d-earth-v2"></script>
+  <script src="js/earth3d-v2.js?v=20260907-3d-earth-v4"></script>
+  <script src="js/earth3d-ui-fix.js?v=20260907-indicators-v1"></script>
 </body>
 </html>
