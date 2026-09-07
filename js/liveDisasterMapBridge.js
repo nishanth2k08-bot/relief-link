@@ -1,6 +1,4 @@
-/* ReliefLink - lightweight Leaflet map bridge.
- * Exposes the existing map instance without changing Leaflet behavior.
- */
+/* ReliefLink - expose the real Leaflet map instance for live disaster feeds. */
 (function () {
   'use strict';
 
