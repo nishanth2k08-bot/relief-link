@@ -3,10 +3,9 @@
   'use strict';
   const COLLECTION='incidents';
   const STATE_KEY='relieflink_state_v1';
+  const SYNCED_KEY='relieflink_firestore_synced_incidents_v1';
   const CHECK_MS=750;
-  const known=new Set();
   const syncing=new Set();
-  const synced=new Set();
 
   function toast(message,type='success'){
     if(typeof window.showToast==='function') window.showToast(message,type);
@@ -15,6 +14,14 @@
 
   function readState(){
     try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')}catch(e){return {}}
+  }
+
+  function readSynced(){
+    try{return new Set(JSON.parse(localStorage.getItem(SYNCED_KEY)||'[]').map(String))}catch(e){return new Set()}
+  }
+
+  function saveSynced(set){
+    try{localStorage.setItem(SYNCED_KEY,JSON.stringify([...set]))}catch(e){}
   }
 
   function clean(value){
@@ -41,6 +48,7 @@
   async function syncIncident(incident,showSuccess=true){
     if(!incident||!incident.id)return false;
     const id=String(incident.id);
+    const synced=readSynced();
     if(syncing.has(id)||synced.has(id))return synced.has(id);
     syncing.add(id);
     try{
@@ -58,6 +66,7 @@
       if(!check.exists)throw new Error('Firestore write returned but the document was not found on the backend');
 
       synced.add(id);
+      saveSynced(synced);
       if(showSuccess)toast('Incident report saved to Firebase successfully.');
       window.dispatchEvent(new CustomEvent('relieflink:incident-synced',{detail:{id,projectId:'relief-link-ff2a6'}}));
       console.info('[ReliefLink] Firestore incident verified:',id);
@@ -72,26 +81,24 @@
   function scan(){
     const state=readState();
     const incidents=Array.isArray(state.incidents)?state.incidents:[];
+    const synced=readSynced();
     incidents.forEach(incident=>{
       const id=String(incident?.id||'');
-      if(!id||!/^INC-\d+$/.test(id)||/^INC-809[12]$/.test(id))return;
-      if(!known.has(id)){
-        known.add(id);
-        syncIncident(incident,true);
-      }
+      if(!id||!/^INC-\d+$/.test(id)||/^INC-809[12]$/.test(id)||synced.has(id))return;
+      syncIncident(incident,true);
     });
   }
 
   function bind(){
     if(document.__reliefLinkIncidentSyncBound)return;
     document.__reliefLinkIncidentSyncBound=true;
-    const initial=readState();
-    (Array.isArray(initial.incidents)?initial.incidents:[]).forEach(i=>{if(i?.id)known.add(String(i.id))});
     setInterval(scan,CHECK_MS);
+    scan();
     document.addEventListener('submit',()=>setTimeout(scan,100),true);
     window.ReliefLinkIncidentSync={
       syncLatest:()=>{const s=readState();return syncIncident(s.incidents?.[0],true)},
-      syncIncident
+      syncIncident,
+      scan
     };
   }
 
