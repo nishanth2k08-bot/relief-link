@@ -9,13 +9,19 @@
   ];
   const PANEL_ID = 'relieflink-protected-login-profiles';
   const STYLE_ID = 'relieflink-protected-login-profiles-style';
+  let authMode = 'signin';
+
+  function removePanel() {
+    const panel = document.getElementById(PANEL_ID);
+    if (panel) panel.remove();
+  }
 
   function isCreateAccount() {
-    const buttons = Array.from(document.querySelectorAll('button, [role="tab"], a'));
-    const create = buttons.find((el) => /create\s*account/i.test((el.textContent || '').trim()));
-    const signIn = buttons.find((el) => /^sign\s*in$/i.test((el.textContent || '').trim()));
-    if (!create || !signIn) return false;
-    return create.classList.contains('active') || create.getAttribute('aria-selected') === 'true';
+    const submit = document.querySelector('#auth-form button[type="submit"], form button[type="submit"]');
+    if (submit && /create\s*account/i.test((submit.textContent || '').trim())) return true;
+    const active = document.querySelector('.auth-tab.active, .auth-mode.active, [role="tab"][aria-selected="true"]');
+    if (active && /create\s*account/i.test((active.textContent || '').trim())) return true;
+    return authMode === 'create';
   }
 
   function addStyles() {
@@ -38,18 +44,11 @@
   function getEmail() { return document.querySelector('#auth-email') || document.querySelector('input[type="email"]'); }
   function getPassword() { return document.querySelector('#auth-password') || document.querySelector('input[type="password"]'); }
 
-  function removePanel() {
-    document.getElementById(PANEL_ID)?.remove();
-  }
-
   function mount() {
+    if (isCreateAccount()) { removePanel(); return; }
     const emailInput = getEmail();
     const passwordInput = getPassword();
-    if (!emailInput || !passwordInput || isCreateAccount()) {
-      removePanel();
-      return;
-    }
-    if (document.getElementById(PANEL_ID)) return;
+    if (!emailInput || !passwordInput || document.getElementById(PANEL_ID)) return;
 
     addStyles();
     const panel = document.createElement('div');
@@ -79,9 +78,26 @@
     }
   }
 
+  function handleModeClick(event) {
+    const target = event.target.closest('button, [role="tab"], a');
+    if (!target) return;
+    const text = (target.textContent || '').trim();
+    if (/create\s*account/i.test(text)) {
+      authMode = 'create';
+      removePanel();
+    } else if (/^sign\s*in$/i.test(text)) {
+      authMode = 'signin';
+      setTimeout(mount, 0);
+    }
+  }
+
   function init() {
+    document.addEventListener('click', handleModeClick, true);
+    new MutationObserver(() => {
+      if (isCreateAccount()) removePanel();
+      else if (!document.getElementById(PANEL_ID)) mount();
+    }).observe(document.body, { childList: true, subtree: true });
     mount();
-    new MutationObserver(() => mount()).observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
