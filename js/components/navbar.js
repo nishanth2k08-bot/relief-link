@@ -13,8 +13,19 @@ export function renderNavbar() {
   return `
     <header class="app-header">
       <div class="brand-section">
-        <div class="brand-logo">
-          <i class="fa-solid fa-shield-halved"></i>
+        <div class="brand-logo" aria-label="ReliefLink">
+          <svg viewBox="0 0 96 96" role="img" aria-hidden="true">
+            <defs>
+              <linearGradient id="rlNavbarShieldGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#2563eb"/>
+                <stop offset="1" stop-color="#0f172a"/>
+              </linearGradient>
+            </defs>
+            <path d="M48 5 82 18v25c0 23-14 39-34 48C28 82 14 66 14 43V18L48 5Z" fill="url(#rlNavbarShieldGradient)"/>
+            <path d="M48 15 72 24v19c0 16-9 28-24 36-15-8-24-20-24-36V24l24-9Z" fill="none" stroke="#fff" stroke-width="3" opacity=".9"/>
+            <path d="M29 49h12l7-14 8 25 7-12h8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="29" cy="49" r="3.5" fill="#fff"/><circle cx="41" cy="49" r="3.5" fill="#fff"/><circle cx="56" cy="60" r="3.5" fill="#fff"/><circle cx="71" cy="48" r="3.5" fill="#fff"/>
+          </svg>
         </div>
         <div class="brand-title">
           ReliefLink
@@ -99,4 +110,3 @@ export function bindNavbarEvents(container) {
     syncBtn.addEventListener('click', () => store.toggleNetworkStatus());
   }
 }
-
