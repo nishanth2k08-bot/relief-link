@@ -1,20 +1,21 @@
-// ReliefLink - custom logo for the Sign In page only.
+// ReliefLink - replace the original Sign In branding with one custom logo.
 (function () {
   'use strict';
 
   const LOGO_ID = 'relieflink-custom-signin-logo';
   const STYLE_ID = 'relieflink-custom-signin-logo-style';
+  const OLD_SUBTITLE = 'Emergency Response Coordination Platform';
 
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      #${LOGO_ID}{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 22px;text-align:center;animation:rlLogoIn .55s ease both}
-      #${LOGO_ID} .rl-logo-mark{width:76px;height:76px;filter:drop-shadow(0 10px 20px rgba(15,23,42,.16));margin-bottom:11px}
-      #${LOGO_ID} .rl-logo-name{font-size:25px;font-weight:800;letter-spacing:-.04em;line-height:1.05;color:#0f172a}
-      #${LOGO_ID} .rl-logo-name span{color:#2563eb}
-      #${LOGO_ID} .rl-logo-tag{margin-top:5px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#64748b}
+      #${LOGO_ID}{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;margin:0 auto 24px;text-align:center;animation:rlLogoIn .55s ease both}
+      #${LOGO_ID} .rl-logo-mark{width:82px;height:82px;filter:drop-shadow(0 10px 20px rgba(15,23,42,.18));margin-bottom:10px}
+      #${LOGO_ID} .rl-logo-name{font-size:27px;font-weight:800;letter-spacing:-.04em;line-height:1.05;color:#f1f5f9}
+      #${LOGO_ID} .rl-logo-name span{color:#60a5fa}
+      #${LOGO_ID} .rl-logo-tag{margin-top:6px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8}
       @keyframes rlLogoIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
       @media(prefers-reduced-motion:reduce){#${LOGO_ID}{animation:none}}
     `;
@@ -25,13 +26,20 @@
     return !!(document.querySelector('#auth-email') && document.querySelector('#auth-password'));
   }
 
-  function mount() {
-    if (!isSignInPage() || document.getElementById(LOGO_ID)) return;
-    const email = document.querySelector('#auth-email');
-    const form = email && email.closest('form');
-    if (!form) return;
+  function findOriginalBranding() {
+    const candidates = Array.from(document.querySelectorAll('div,section,header'))
+      .filter((el) => {
+        const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!text.includes(OLD_SUBTITLE) || !text.includes('ReliefLink')) return false;
+        if (el.querySelector('input,button,form')) return false;
+        return el.children.length <= 8;
+      });
 
-    addStyles();
+    if (!candidates.length) return null;
+    return candidates.sort((a, b) => a.textContent.length - b.textContent.length)[0];
+  }
+
+  function createLogo() {
     const logo = document.createElement('div');
     logo.id = LOGO_ID;
     logo.setAttribute('aria-label', 'ReliefLink');
@@ -51,15 +59,37 @@
       <div class="rl-logo-name">Relief<span>Link</span></div>
       <div class="rl-logo-tag">Emergency Response Network</div>
     `;
+    return logo;
+  }
 
-    form.insertBefore(logo, form.firstChild);
+  function mount() {
+    if (!isSignInPage()) return;
+    addStyles();
+
+    const existing = document.getElementById(LOGO_ID);
+    if (existing) existing.remove();
+
+    const original = findOriginalBranding();
+    const email = document.querySelector('#auth-email');
+    const form = email && email.closest('form');
+    const logo = createLogo();
+
+    if (original && original.parentNode) {
+      original.parentNode.insertBefore(logo, original);
+      original.remove();
+      return;
+    }
+
+    if (form && form.parentNode) {
+      form.parentNode.insertBefore(logo, form);
+    }
   }
 
   function init() {
     mount();
     const observer = new MutationObserver(mount);
     observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(mount, 1000);
+    setInterval(mount, 1500);
   }
 
   if (document.readyState === 'loading') {
