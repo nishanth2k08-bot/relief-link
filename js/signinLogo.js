@@ -16,6 +16,9 @@
       #${LOGO_ID} .rl-logo-name{font-size:27px;font-weight:800;letter-spacing:-.04em;line-height:1.05;color:#f1f5f9}
       #${LOGO_ID} .rl-logo-name span{color:#60a5fa}
       #${LOGO_ID} .rl-logo-tag{margin-top:6px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8}
+      body.theme-light #${LOGO_ID} .rl-logo-name{color:#0f172a}
+      body.theme-light #${LOGO_ID} .rl-logo-name span{color:#2563eb}
+      body.theme-light #${LOGO_ID} .rl-logo-tag{color:#64748b}
       @keyframes rlLogoIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
       @media(prefers-reduced-motion:reduce){#${LOGO_ID}{animation:none}}
     `;
