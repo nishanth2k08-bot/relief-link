@@ -27,16 +27,20 @@
   }
 
   function findOriginalBranding() {
-    const candidates = Array.from(document.querySelectorAll('div,section,header'))
-      .filter((el) => {
-        const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
-        if (!text.includes(OLD_SUBTITLE) || !text.includes('ReliefLink')) return false;
-        if (el.querySelector('input,button,form')) return false;
-        return el.children.length <= 8;
-      });
+    const subtitle = Array.from(document.querySelectorAll('*')).find((el) =>
+      el.children.length === 0 && (el.textContent || '').trim() === OLD_SUBTITLE
+    );
+    if (!subtitle) return null;
 
-    if (!candidates.length) return null;
-    return candidates.sort((a, b) => a.textContent.length - b.textContent.length)[0];
+    let parent = subtitle.parentElement;
+    while (parent && parent !== document.body) {
+      const text = (parent.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text.includes('ReliefLink') && text.includes(OLD_SUBTITLE) && parent.children.length <= 6) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return subtitle.parentElement;
   }
 
   function createLogo() {
@@ -64,32 +68,23 @@
 
   function mount() {
     if (!isSignInPage()) return;
+    if (document.getElementById(LOGO_ID)) return;
+
     addStyles();
-
-    const existing = document.getElementById(LOGO_ID);
-    if (existing) existing.remove();
-
     const original = findOriginalBranding();
-    const email = document.querySelector('#auth-email');
-    const form = email && email.closest('form');
+    if (!original || !original.parentNode) return;
+
     const logo = createLogo();
-
-    if (original && original.parentNode) {
-      original.parentNode.insertBefore(logo, original);
-      original.remove();
-      return;
-    }
-
-    if (form && form.parentNode) {
-      form.parentNode.insertBefore(logo, form);
-    }
+    original.parentNode.insertBefore(logo, original);
+    original.remove();
   }
 
   function init() {
     mount();
-    const observer = new MutationObserver(mount);
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById(LOGO_ID)) mount();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(mount, 1500);
   }
 
   if (document.readyState === 'loading') {
