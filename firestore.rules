@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'administrator@relieflink.app' ||
+        request.auth.token.email == 'admin@relieflink.app'
+      );
+    }
+
+    function isCoordinator() {
+      return signedIn() &&
+        request.auth.token.email == 'coordinator@relieflink.app';
+    }
+
+    function isPrivileged() {
+      return isAdmin() || isCoordinator();
+    }
+
+    // Incident reports are readable by authenticated responders.
+    // New reports must be associated with the Firebase account creating them.
+    match /incidents/{incidentId} {
+      allow read: if signedIn();
+      allow create: if signedIn() &&
+        request.resource.data.firebaseUserId == request.auth.uid;
+      allow update: if isPrivileged() ||
+        (signedIn() && resource.data.firebaseUserId == request.auth.uid &&
+         request.resource.data.firebaseUserId == resource.data.firebaseUserId);
+      allow delete: if isPrivileged();
+    }
+
+    // User role/profile records are never writable from the client.
+    // Privileged users may read them if the app adds role profiles later.
+    match /users/{userId} {
+      allow read: if isPrivileged() || (signedIn() && request.auth.uid == userId);
+      allow write: if false;
+    }
+
+    // Agency messages and operational records require authentication.
+    // Only administrator/admin/coordinator accounts can modify them.
+    match /agencyMessages/{messageId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isPrivileged();
+    }
+
+    match /agencies/{agencyId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isPrivileged();
+    }
+
+    match /responders/{responderId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isPrivileged();
+    }
+
+    // Deny every other Firestore collection by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
